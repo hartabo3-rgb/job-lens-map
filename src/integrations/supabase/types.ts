@@ -14,16 +14,193 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          applicant_id: string
+          applied_at: string
+          id: string
+          job_id: string
+          match_score: number
+        }
+        Insert: {
+          applicant_id: string
+          applied_at?: string
+          id?: string
+          job_id: string
+          match_score?: number
+        }
+        Update: {
+          applicant_id?: string
+          applied_at?: string
+          id?: string
+          job_id?: string
+          match_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          created_at: string
+          description: string
+          employer_id: string
+          id: string
+          latitude: number
+          location_name: string
+          longitude: number
+          required_education:
+            | Database["public"]["Enums"]["education_level"]
+            | null
+          required_experience:
+            | Database["public"]["Enums"]["experience_range"]
+            | null
+          required_field: string | null
+          required_languages: string[] | null
+          required_skills: string[] | null
+          status: Database["public"]["Enums"]["job_status"]
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          employer_id: string
+          id?: string
+          latitude: number
+          location_name: string
+          longitude: number
+          required_education?:
+            | Database["public"]["Enums"]["education_level"]
+            | null
+          required_experience?:
+            | Database["public"]["Enums"]["experience_range"]
+            | null
+          required_field?: string | null
+          required_languages?: string[] | null
+          required_skills?: string[] | null
+          status?: Database["public"]["Enums"]["job_status"]
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          employer_id?: string
+          id?: string
+          latitude?: number
+          location_name?: string
+          longitude?: number
+          required_education?:
+            | Database["public"]["Enums"]["education_level"]
+            | null
+          required_experience?:
+            | Database["public"]["Enums"]["experience_range"]
+            | null
+          required_field?: string | null
+          required_languages?: string[] | null
+          required_skills?: string[] | null
+          status?: Database["public"]["Enums"]["job_status"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_employer_id_fkey"
+            columns: ["employer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          cv_url: string | null
+          education: Database["public"]["Enums"]["education_level"] | null
+          email: string
+          experience_years:
+            | Database["public"]["Enums"]["experience_range"]
+            | null
+          field: string | null
+          full_name: string | null
+          id: string
+          languages: string[] | null
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          skills: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          cv_url?: string | null
+          education?: Database["public"]["Enums"]["education_level"] | null
+          email: string
+          experience_years?:
+            | Database["public"]["Enums"]["experience_range"]
+            | null
+          field?: string | null
+          full_name?: string | null
+          id: string
+          languages?: string[] | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          skills?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          cv_url?: string | null
+          education?: Database["public"]["Enums"]["education_level"] | null
+          email?: string
+          experience_years?:
+            | Database["public"]["Enums"]["experience_range"]
+            | null
+          field?: string | null
+          full_name?: string | null
+          id?: string
+          languages?: string[] | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          skills?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_match_score: {
+        Args: { p_applicant_id: string; p_job_id: string }
+        Returns: number
+      }
     }
     Enums: {
-      [_ in never]: never
+      education_level: "ثانوية" | "دبلوم" | "بكالوريوس" | "ماجستير" | "دكتوراه"
+      experience_range:
+        | "أقل من سنة"
+        | "1-3 سنوات"
+        | "3-5 سنوات"
+        | "5-10 سنوات"
+        | "أكثر من 10 سنوات"
+      job_status: "active" | "closed"
+      user_role: "job_seeker" | "employer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +327,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      education_level: ["ثانوية", "دبلوم", "بكالوريوس", "ماجستير", "دكتوراه"],
+      experience_range: [
+        "أقل من سنة",
+        "1-3 سنوات",
+        "3-5 سنوات",
+        "5-10 سنوات",
+        "أكثر من 10 سنوات",
+      ],
+      job_status: ["active", "closed"],
+      user_role: ["job_seeker", "employer"],
+    },
   },
 } as const
