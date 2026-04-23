@@ -110,7 +110,7 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto z-[2000]" dir="rtl">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle>نشر وظيفة جديدة</DialogTitle>
           <DialogDescription>
