@@ -61,18 +61,26 @@ export const Navbar = () => {
                       </span>
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-52 z-[1200]">
+                    <div className="px-2 py-1.5 text-xs text-muted-foreground border-b mb-1">
+                      {profile.email}
+                    </div>
                     {profile.role === "job_seeker" ? (
                       <DropdownMenuItem asChild>
-                        <Link to="/profile">ملفي الشخصي</Link>
+                        <Link to="/profile">تعديل الملف الشخصي</Link>
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem asChild>
-                        <Link to="/dashboard">لوحة الوظائف</Link>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link to="/dashboard">لوحة الوظائف</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/profile">تعديل الملف الشخصي</Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={signOut} className="text-destructive">
+                    <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
                       تسجيل الخروج
                     </DropdownMenuItem>
                   </DropdownMenuContent>
