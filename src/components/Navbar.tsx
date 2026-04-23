@@ -70,14 +70,9 @@ export const Navbar = () => {
                         <Link to="/profile">تعديل الملف الشخصي</Link>
                       </DropdownMenuItem>
                     ) : (
-                      <>
-                        <DropdownMenuItem asChild>
-                          <Link to="/dashboard">لوحة الوظائف</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to="/profile">تعديل الملف الشخصي</Link>
-                        </DropdownMenuItem>
-                      </>
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard">لوحة الوظائف</Link>
+                      </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
