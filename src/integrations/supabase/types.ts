@@ -53,12 +53,61 @@ export type Database = {
           },
         ]
       }
+      company_locations: {
+        Row: {
+          company_name: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          employer_id: string
+          id: string
+          latitude: number
+          location_name: string
+          longitude: number
+          recruitment_email: string | null
+          recruitment_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          employer_id: string
+          id?: string
+          latitude: number
+          location_name: string
+          longitude: number
+          recruitment_email?: string | null
+          recruitment_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          employer_id?: string
+          id?: string
+          latitude?: number
+          location_name?: string
+          longitude?: number
+          recruitment_email?: string | null
+          recruitment_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           created_at: string
           description: string
           employer_id: string
           id: string
+          is_government: boolean
           latitude: number
           location_name: string
           longitude: number
@@ -79,6 +128,7 @@ export type Database = {
           description: string
           employer_id: string
           id?: string
+          is_government?: boolean
           latitude: number
           location_name: string
           longitude: number
@@ -99,6 +149,7 @@ export type Database = {
           description?: string
           employer_id?: string
           id?: string
+          is_government?: boolean
           latitude?: number
           location_name?: string
           longitude?: number

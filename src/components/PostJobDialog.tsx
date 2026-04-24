@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { X, Landmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { EDUCATION_LEVELS, EXPERIENCE_RANGES, LANGUAGES } from "@/lib/constants";
@@ -43,6 +44,7 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
   const [langs, setLangs] = useState<string[]>([]);
+  const [isGovernment, setIsGovernment] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
       setSkills([]);
       setSkillInput("");
       setLangs([]);
+      setIsGovernment(false);
     }
   }, [open, location]);
 
@@ -96,6 +99,7 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
       required_experience: (experience || null) as any,
       required_skills: skills,
       required_languages: langs,
+      is_government: isGovernment,
     });
     setSubmitting(false);
 
@@ -225,6 +229,16 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
                 </Badge>
               ))}
             </div>
+          </div>
+          <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Landmark className="w-4 h-4 text-destructive" />
+              <div>
+                <div className="text-sm font-medium">وظيفة حكومية</div>
+                <div className="text-[11px] text-muted-foreground">ستظهر بعلامة حمراء على الخريطة</div>
+              </div>
+            </div>
+            <Switch checked={isGovernment} onCheckedChange={setIsGovernment} />
           </div>
         </div>
 
