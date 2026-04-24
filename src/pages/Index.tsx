@@ -288,8 +288,10 @@ const Index = () => {
         }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; Google Maps'
+          url="https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+          subdomains={["0", "1", "2", "3"]}
+          opacity={0.7}
         />
 
         <SaudiOverlay />
