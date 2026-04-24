@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
+import { LayersControl, MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import {
   Briefcase,
@@ -287,12 +287,29 @@ const Index = () => {
           if (map) mapRef.current = map;
         }}
       >
-        <TileLayer
-          attribution='&copy; Google Maps'
-          url="https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-          subdomains={["0", "1", "2", "3"]}
-          opacity={0.7}
-        />
+        <LayersControl position="topleft">
+          <LayersControl.BaseLayer checked name="خريطة عادية">
+            <TileLayer
+              attribution='&copy; Google Maps'
+              url="https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+              subdomains={["0", "1", "2", "3"]}
+            />
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="قمر صناعي">
+            <TileLayer
+              attribution='&copy; Google Satellite'
+              url="https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+              subdomains={["0", "1", "2", "3"]}
+            />
+          </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="هجين (قمر + أسماء)">
+            <TileLayer
+              attribution='&copy; Google Hybrid'
+              url="https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+              subdomains={["0", "1", "2", "3"]}
+            />
+          </LayersControl.BaseLayer>
+        </LayersControl>
 
         <SaudiOverlay />
 
