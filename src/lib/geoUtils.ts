@@ -29,7 +29,7 @@ function pointInPolygon(point: [number, number], polygon: number[][][]): boolean
  */
 export function isInsideSaudiArabia(lat: number, lng: number): boolean {
   const point: [number, number] = [lng, lat];
-  for (const feature of SAUDI_BOUNDARY_GEOJSON.features as any[]) {
+  for (const feature of (SAUDI_BOUNDARY_GEOJSON as any).features as any[]) {
     const geom = feature.geometry;
     if (geom.type === "Polygon") {
       if (pointInPolygon(point, geom.coordinates)) return true;
