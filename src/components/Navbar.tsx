@@ -1,4 +1,4 @@
-import { Briefcase, MapPin } from "lucide-react";
+import { Briefcase, MapPin, Building2 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,7 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-export const Navbar = () => {
+type NavbarProps = {
+  onAddCompanyLocation?: () => void;
+};
+
+export const Navbar = ({ onAddCompanyLocation }: NavbarProps = {}) => {
   const { user, profile, signOut } = useAuth();
   const location = useLocation();
 
@@ -70,9 +74,20 @@ export const Navbar = () => {
                         <Link to="/profile">تعديل الملف الشخصي</Link>
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem asChild>
-                        <Link to="/dashboard">لوحة الوظائف</Link>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link to="/dashboard">لوحة الوظائف</Link>
+                        </DropdownMenuItem>
+                        {onAddCompanyLocation && (
+                          <DropdownMenuItem
+                            onClick={onAddCompanyLocation}
+                            className="cursor-pointer"
+                          >
+                            <Building2 className="w-4 h-4 ml-2 text-success" />
+                            إضافة موقع شركة
+                          </DropdownMenuItem>
+                        )}
+                      </>
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">

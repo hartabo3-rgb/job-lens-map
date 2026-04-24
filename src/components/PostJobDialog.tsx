@@ -230,6 +230,16 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
               ))}
             </div>
           </div>
+          <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Landmark className="w-4 h-4 text-destructive" />
+              <div>
+                <div className="text-sm font-medium">وظيفة حكومية</div>
+                <div className="text-[11px] text-muted-foreground">ستظهر بعلامة حمراء على الخريطة</div>
+              </div>
+            </div>
+            <Switch checked={isGovernment} onCheckedChange={setIsGovernment} />
+          </div>
         </div>
 
         <DialogFooter>
