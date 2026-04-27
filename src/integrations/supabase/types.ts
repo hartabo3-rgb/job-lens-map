@@ -53,6 +53,45 @@ export type Database = {
           },
         ]
       }
+      commercial_towers: {
+        Row: {
+          companies: string[]
+          created_at: string
+          description: string | null
+          employer_id: string
+          id: string
+          latitude: number
+          location_name: string
+          longitude: number
+          tower_name: string
+          updated_at: string
+        }
+        Insert: {
+          companies?: string[]
+          created_at?: string
+          description?: string | null
+          employer_id: string
+          id?: string
+          latitude: number
+          location_name: string
+          longitude: number
+          tower_name: string
+          updated_at?: string
+        }
+        Update: {
+          companies?: string[]
+          created_at?: string
+          description?: string | null
+          employer_id?: string
+          id?: string
+          latitude?: number
+          location_name?: string
+          longitude?: number
+          tower_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_locations: {
         Row: {
           company_name: string
@@ -103,14 +142,18 @@ export type Database = {
       }
       jobs: {
         Row: {
+          application_url: string | null
           created_at: string
           description: string
+          duration_hours: number | null
           employer_id: string
+          expires_at: string | null
           id: string
           is_government: boolean
           latitude: number
           location_name: string
           longitude: number
+          max_applicants: number | null
           required_education:
             | Database["public"]["Enums"]["education_level"]
             | null
@@ -124,14 +167,18 @@ export type Database = {
           title: string
         }
         Insert: {
+          application_url?: string | null
           created_at?: string
           description: string
+          duration_hours?: number | null
           employer_id: string
+          expires_at?: string | null
           id?: string
           is_government?: boolean
           latitude: number
           location_name: string
           longitude: number
+          max_applicants?: number | null
           required_education?:
             | Database["public"]["Enums"]["education_level"]
             | null
@@ -145,14 +192,18 @@ export type Database = {
           title: string
         }
         Update: {
+          application_url?: string | null
           created_at?: string
           description?: string
+          duration_hours?: number | null
           employer_id?: string
+          expires_at?: string | null
           id?: string
           is_government?: boolean
           latitude?: number
           location_name?: string
           longitude?: number
+          max_applicants?: number | null
           required_education?:
             | Database["public"]["Enums"]["education_level"]
             | null
