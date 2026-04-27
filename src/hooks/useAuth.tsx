@@ -21,6 +21,7 @@ type AuthContextValue = {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
+  isAdmin: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -32,15 +33,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
+    const [{ data }, { data: roles }] = await Promise.all([
+      supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
-      .maybeSingle();
+      .maybeSingle(),
+      supabase
+        .from("user_roles" as any)
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+    ]);
     setProfile((data as Profile) ?? null);
+    setIsAdmin(((roles as unknown as { role: string }[] | null) ?? []).some((item) => item.role === "admin"));
   };
 
   useEffect(() => {
@@ -52,6 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setTimeout(() => fetchProfile(newSession.user.id), 0);
         } else {
           setProfile(null);
+          setIsAdmin(false);
         }
       }
     );
@@ -72,6 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setIsAdmin(false);
   };
 
   const refreshProfile = async () => {
@@ -79,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, isAdmin, loading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

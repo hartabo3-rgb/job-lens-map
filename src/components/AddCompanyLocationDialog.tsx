@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Building2 } from "lucide-react";
+import { Building2, Upload } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -37,6 +37,7 @@ export const AddCompanyLocationDialog = ({
   const [contactPhone, setContactPhone] = useState("");
   const [recruitmentEmail, setRecruitmentEmail] = useState("");
   const [recruitmentUrl, setRecruitmentUrl] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export const AddCompanyLocationDialog = ({
       setContactPhone("");
       setRecruitmentEmail("");
       setRecruitmentUrl("");
+      setLogoFile(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, location]);
@@ -65,6 +67,20 @@ export const AddCompanyLocationDialog = ({
       return;
     }
     setSubmitting(true);
+    let logoPath: string | null = null;
+    if (logoFile) {
+      const extension = logoFile.name.split(".").pop() || "png";
+      logoPath = `${user.id}/${crypto.randomUUID()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from("company-logos").upload(logoPath, logoFile, {
+        upsert: false,
+        contentType: logoFile.type,
+      });
+      if (uploadError) {
+        setSubmitting(false);
+        toast.error("تعذّر رفع الشعار: " + uploadError.message);
+        return;
+      }
+    }
     const { error } = await supabase.from("company_locations").insert({
       employer_id: user.id,
       company_name: companyName.trim(),
@@ -76,6 +92,7 @@ export const AddCompanyLocationDialog = ({
       contact_phone: contactPhone.trim() || null,
       recruitment_email: recruitmentEmail.trim() || null,
       recruitment_url: recruitmentUrl.trim() || null,
+      logo_url: logoPath,
     });
     setSubmitting(false);
     if (error) {
@@ -118,6 +135,15 @@ export const AddCompanyLocationDialog = ({
               placeholder="نبذة قصيرة عن الشركة ومجال عملها..."
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>شعار الشركة</Label>
+            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-border bg-muted/40 px-3 py-4 text-sm text-muted-foreground hover:bg-muted">
+              <Upload className="w-4 h-4" />
+              {logoFile ? logoFile.name : "اختر صورة الشعار"}
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)} />
+            </label>
           </div>
 
           <div className="space-y-2">

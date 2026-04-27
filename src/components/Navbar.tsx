@@ -17,7 +17,7 @@ type NavbarProps = {
 };
 
 export const Navbar = ({ onAddCompanyLocation, onAddCommercialTower }: NavbarProps = {}) => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
   const location = useLocation();
 
   const initials = profile?.full_name
@@ -88,7 +88,7 @@ export const Navbar = ({ onAddCompanyLocation, onAddCommercialTower }: NavbarPro
                             إضافة موقع شركة
                           </DropdownMenuItem>
                         )}
-                        {onAddCommercialTower && (
+                        {isAdmin && onAddCommercialTower && (
                           <DropdownMenuItem
                             onClick={onAddCommercialTower}
                             className="cursor-pointer"

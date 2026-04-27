@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { PostJobDialog } from "@/components/PostJobDialog";
 import { AddCompanyLocationDialog } from "@/components/AddCompanyLocationDialog";
 import { AddCommercialTowerDialog } from "@/components/AddCommercialTowerDialog";
+import { AddTowerCompanyDialog } from "@/components/AddTowerCompanyDialog";
 import { SaudiOverlay } from "@/components/SaudiOverlay";
 import "leaflet/dist/leaflet.css";
 
@@ -65,6 +66,7 @@ type CompanyLocation = {
   contact_phone: string | null;
   recruitment_email: string | null;
   recruitment_url: string | null;
+  logo_url: string | null;
 };
 
 type CommercialTower = {
@@ -76,6 +78,19 @@ type CommercialTower = {
   longitude: number;
   companies: string[] | null;
   description: string | null;
+};
+
+type TowerCompany = {
+  id: string;
+  tower_id: string;
+  employer_id: string;
+  company_name: string;
+  description: string | null;
+  logo_url: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  recruitment_email: string | null;
+  recruitment_url: string | null;
 };
 
 type ClickMode = "none" | "post_job" | "add_company" | "add_tower";
@@ -97,14 +112,18 @@ const Index = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [companies, setCompanies] = useState<CompanyLocation[]>([]);
   const [towers, setTowers] = useState<CommercialTower[]>([]);
+  const [towerCompanies, setTowerCompanies] = useState<TowerCompany[]>([]);
+  const [logoUrls, setLogoUrls] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [postJobOpen, setPostJobOpen] = useState(false);
   const [addCompanyOpen, setAddCompanyOpen] = useState(false);
   const [addTowerOpen, setAddTowerOpen] = useState(false);
+  const [addTowerCompanyOpen, setAddTowerCompanyOpen] = useState(false);
+  const [selectedTower, setSelectedTower] = useState<CommercialTower | null>(null);
   const [clickMode, setClickMode] = useState<ClickMode>("none");
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const jobIcon = useMemo(() => createMarkerIcon("job"), []);
   const govIcon = useMemo(() => createMarkerIcon("gov_job"), []);
   const companyIcon = useMemo(() => createMarkerIcon("company"), []);
@@ -155,11 +174,46 @@ const Index = () => {
     setTowers((data as unknown as CommercialTower[]) ?? []);
   };
 
+  const loadTowerCompanies = async () => {
+    const { data, error } = await supabase
+      .from("tower_companies" as any)
+      .select("*")
+      .order("company_name", { ascending: true });
+    if (error) {
+      console.error(error);
+      return;
+    }
+    setTowerCompanies((data as unknown as TowerCompany[]) ?? []);
+  };
+
   useEffect(() => {
     loadJobs();
     loadCompanies();
     loadTowers();
+    loadTowerCompanies();
   }, []);
+
+  useEffect(() => {
+    const logoPaths = [...companies, ...towerCompanies]
+      .map((item) => item.logo_url)
+      .filter((path): path is string => Boolean(path && !logoUrls[path]));
+    if (logoPaths.length === 0) return;
+
+    supabase.storage
+      .from("company-logos")
+      .createSignedUrls(logoPaths, 60 * 60)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error(error);
+          return;
+        }
+        const nextUrls: Record<string, string> = {};
+        data?.forEach((item) => {
+          if (item.path && item.signedUrl) nextUrls[item.path] = item.signedUrl;
+        });
+        setLogoUrls((prev) => ({ ...prev, ...nextUrls }));
+      });
+  }, [companies, towerCompanies, logoUrls]);
 
   // Auto-enable post_job mode for employers when nothing else is active
   useEffect(() => {
@@ -199,9 +253,74 @@ const Index = () => {
       (tower) =>
         tower.tower_name.toLowerCase().includes(q) ||
         tower.location_name.toLowerCase().includes(q) ||
-        (tower.companies ?? []).some((company) => company.toLowerCase().includes(q))
+        towerCompanies.some(
+          (company) => company.tower_id === tower.id && company.company_name.toLowerCase().includes(q)
+        )
     );
-  }, [towers, search]);
+  }, [towers, search, towerCompanies]);
+
+  const getTowerCompanies = (towerId: string) =>
+    towerCompanies
+      .filter((company) => company.tower_id === towerId)
+      .sort((a, b) => a.company_name.localeCompare(b.company_name, "ar"));
+
+  const renderCompanyDetails = (company: CompanyLocation | TowerCompany, variant: "standalone" | "tower" = "standalone") => (
+    <div className="space-y-2 rounded-md border border-border bg-muted/30 p-2">
+      <div className="flex items-start gap-2">
+        {company.logo_url && logoUrls[company.logo_url] ? (
+          <img src={logoUrls[company.logo_url]} alt={`شعار ${company.company_name}`} className="w-10 h-10 rounded-md object-contain bg-background border border-border" />
+        ) : (
+          <div className="w-10 h-10 rounded-md bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
+            <Building2 className="w-5 h-5 text-white" />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <h4 className="font-bold text-sm text-foreground leading-tight m-0">{company.company_name}</h4>
+          {variant === "standalone" && "location_name" in company && (
+            <p className="text-xs text-muted-foreground m-0 mt-0.5">{company.location_name}</p>
+          )}
+        </div>
+      </div>
+
+      {company.description && (
+        <p className="text-xs text-foreground/80 leading-relaxed m-0">{company.description}</p>
+      )}
+
+      <div className="space-y-1">
+        {company.contact_email && (
+          <a href={`mailto:${company.contact_email}`} className="flex items-center gap-1.5 text-xs text-foreground/80 hover:text-primary">
+            <Mail className="w-3 h-3" /> {company.contact_email}
+          </a>
+        )}
+        {company.contact_phone && (
+          <div className="flex items-center gap-1.5 text-xs text-foreground/80">
+            <Phone className="w-3 h-3" /> {company.contact_phone}
+          </div>
+        )}
+      </div>
+
+      {(company.recruitment_email || company.recruitment_url) && (
+        <div className="flex flex-col gap-1.5">
+          {company.recruitment_url && (
+            <Button asChild size="sm" className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:opacity-90">
+              <a href={company.recruitment_url} target="_blank" rel="noreferrer">
+                <ExternalLink className="w-3 h-3 ml-1" />
+                صفحة التوظيف
+              </a>
+            </Button>
+          )}
+          {company.recruitment_email && (
+            <Button asChild size="sm" variant="outline" className="w-full">
+              <a href={`mailto:${company.recruitment_email}`}>
+                <Mail className="w-3 h-3 ml-1" />
+                {company.recruitment_email}
+              </a>
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
 
   const handleApply = async (job: Job) => {
     if (!user || !profile) {
@@ -235,7 +354,8 @@ const Index = () => {
   };
 
   const handleMapClick = (lat: number, lng: number) => {
-    if (profile?.role !== "employer" || clickMode === "none") return;
+    if (clickMode === "none") return;
+    if (clickMode === "add_tower" ? !isAdmin : profile?.role !== "employer") return;
 
     if (!isInsideSaudiArabia(lat, lng)) {
       toast.error("الموقع يجب أن يكون داخل حدود المملكة العربية السعودية");
@@ -258,6 +378,10 @@ const Index = () => {
   };
 
   const startAddTowerFlow = () => {
+    if (!isAdmin) {
+      toast.error("إضافة الأبراج متاحة لحساب المدير فقط");
+      return;
+    }
     setClickMode("add_tower");
     toast.info("اضغط على الخريطة داخل السعودية لتحديد موقع البرج التجاري");
   };
@@ -315,7 +439,7 @@ const Index = () => {
       </div>
 
       {/* Hint for employers */}
-      {profile?.role === "employer" && clickMode !== "none" && (
+      {(profile?.role === "employer" || isAdmin) && clickMode !== "none" && (
         <div className="absolute bottom-6 inset-x-0 z-[999] pointer-events-none">
           <div className="container mx-auto px-4">
             <div className="max-w-md mx-auto pointer-events-auto bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-elegant px-4 py-3 text-center text-sm flex items-center justify-between gap-3">
@@ -325,7 +449,7 @@ const Index = () => {
                   ? "اضغط على أي نقطة داخل السعودية لنشر وظيفة"
                   : clickMode === "add_company"
                     ? "اضغط على أي نقطة داخل السعودية لتحديد موقع الشركة"
-                    : "اضغط على أي نقطة داخل السعودية لتحديد موقع البرج التجاري"}
+                    : "اضغط على أي نقطة داخل السعودية لتحديد موقع البرج التجاري — للمدير فقط"}
               </div>
               {clickMode !== "post_job" && (
                 <Button
@@ -467,9 +591,13 @@ const Index = () => {
             <Popup>
               <div className="p-4 font-sans" dir="rtl">
                 <div className="flex items-start gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="w-4 h-4 text-white" />
-                  </div>
+                  {c.logo_url && logoUrls[c.logo_url] ? (
+                    <img src={logoUrls[c.logo_url]} alt={`شعار ${c.company_name}`} className="w-8 h-8 rounded-lg object-contain bg-background border border-border flex-shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                      <Building2 className="w-4 h-4 text-white" />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-base text-foreground leading-tight m-0">
                       {c.company_name}
@@ -483,61 +611,7 @@ const Index = () => {
                   <span>{c.location_name}</span>
                 </div>
 
-                {c.description && (
-                  <p className="text-xs text-foreground/80 line-clamp-3 mb-3 leading-relaxed">
-                    {c.description}
-                  </p>
-                )}
-
-                <div className="space-y-1 mb-3">
-                  {c.contact_email && (
-                    <a
-                      href={`mailto:${c.contact_email}`}
-                      className="flex items-center gap-1.5 text-xs text-foreground/80 hover:text-primary"
-                    >
-                      <Mail className="w-3 h-3" /> {c.contact_email}
-                    </a>
-                  )}
-                  {c.contact_phone && (
-                    <div className="flex items-center gap-1.5 text-xs text-foreground/80">
-                      <Phone className="w-3 h-3" /> {c.contact_phone}
-                    </div>
-                  )}
-                </div>
-
-                {(c.recruitment_email || c.recruitment_url) && (
-                  <div className="flex flex-col gap-1.5">
-                    {c.recruitment_url && (
-                      <Button
-                        asChild
-                        size="sm"
-                        className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:opacity-90"
-                      >
-                        <a
-                          href={c.recruitment_url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <ExternalLink className="w-3 h-3 ml-1" />
-                          صفحة التوظيف
-                        </a>
-                      </Button>
-                    )}
-                    {c.recruitment_email && (
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <a href={`mailto:${c.recruitment_email}`}>
-                          <Mail className="w-3 h-3 ml-1" />
-                          {c.recruitment_email}
-                        </a>
-                      </Button>
-                    )}
-                  </div>
-                )}
+                {renderCompanyDetails(c)}
               </div>
             </Popup>
           </Marker>
@@ -575,14 +649,35 @@ const Index = () => {
                   </p>
                 )}
 
-                <div className="space-y-1">
-                  <div className="text-xs font-semibold text-foreground">الشركات الموجودة:</div>
-                  {(tower.companies ?? []).length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {(tower.companies ?? []).map((company) => (
-                        <Badge key={company} variant="secondary" className="text-[10px]">
-                          {company}
-                        </Badge>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-xs font-semibold text-foreground">الشركات الموجودة:</div>
+                    {profile?.role === "employer" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => {
+                          setSelectedTower(tower);
+                          setAddTowerCompanyOpen(true);
+                        }}
+                      >
+                        إضافة شركة
+                      </Button>
+                    )}
+                  </div>
+                  {getTowerCompanies(tower.id).length > 0 ? (
+                    <div className="space-y-1.5">
+                      {getTowerCompanies(tower.id).map((company) => (
+                        <details key={company.id} className="group rounded-md border border-border bg-muted/30 px-2 py-1.5">
+                          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-medium text-foreground">
+                            <span className="truncate">{company.company_name}</span>
+                            <span className="text-muted-foreground group-open:hidden">عرض</span>
+                          </summary>
+                          <div className="mt-2">
+                            {renderCompanyDetails(company, "tower")}
+                          </div>
+                        </details>
                       ))}
                     </div>
                   ) : (
@@ -639,6 +734,19 @@ const Index = () => {
           loadTowers();
           setPendingLocation(null);
           setClickMode("post_job");
+        }}
+      />
+
+      <AddTowerCompanyDialog
+        open={addTowerCompanyOpen}
+        onOpenChange={(open) => {
+          setAddTowerCompanyOpen(open);
+          if (!open) setSelectedTower(null);
+        }}
+        tower={selectedTower}
+        onSaved={() => {
+          loadTowerCompanies();
+          setSelectedTower(null);
         }}
       />
     </div>

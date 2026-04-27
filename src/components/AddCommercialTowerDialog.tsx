@@ -11,11 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Warehouse, X } from "lucide-react";
+import { Warehouse } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -30,12 +29,10 @@ export const AddCommercialTowerDialog = ({
   location,
   onSaved,
 }: Props) => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [towerName, setTowerName] = useState("");
   const [locationName, setLocationName] = useState("");
   const [description, setDescription] = useState("");
-  const [companies, setCompanies] = useState<string[]>([]);
-  const [companyInput, setCompanyInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -46,21 +43,15 @@ export const AddCommercialTowerDialog = ({
       setTowerName("");
       setLocationName("");
       setDescription("");
-      setCompanies([]);
-      setCompanyInput("");
     }
   }, [open, location]);
 
-  const addCompany = () => {
-    const value = companyInput.trim();
-    if (value && !companies.includes(value)) {
-      setCompanies((prev) => [...prev, value]);
-    }
-    setCompanyInput("");
-  };
-
   const handleSubmit = async () => {
     if (!user || !location) return;
+    if (!isAdmin) {
+      toast.error("إضافة الأبراج متاحة لحساب المدير فقط");
+      return;
+    }
     if (!towerName.trim() || !locationName.trim()) {
       toast.error("اسم البرج واسم الموقع مطلوبان");
       return;
@@ -72,7 +63,7 @@ export const AddCommercialTowerDialog = ({
       tower_name: towerName.trim(),
       location_name: locationName.trim(),
       description: description.trim() || null,
-      companies,
+      companies: [],
       latitude: location.lat,
       longitude: location.lng,
     } as any);
@@ -97,7 +88,7 @@ export const AddCommercialTowerDialog = ({
             إضافة برج تجاري
           </DialogTitle>
           <DialogDescription>
-            سيظهر البرج على الخريطة بعلامة صفراء وتظهر الشركات الموجودة داخله عند الضغط عليه.
+            إضافة موقع البرج متاحة للمدير فقط، ويمكن لأصحاب العمل إضافة شركاتهم بعد الضغط على البرج.
           </DialogDescription>
         </DialogHeader>
 
@@ -128,36 +119,6 @@ export const AddCommercialTowerDialog = ({
               placeholder="معلومات مختصرة عن البرج أو المجموعة..."
               rows={3}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label>الشركات الموجودة داخل البرج</Label>
-            <div className="flex gap-2">
-              <Input
-                value={companyInput}
-                onChange={(e) => setCompanyInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addCompany();
-                  }
-                }}
-                placeholder="أضف اسم شركة واضغط Enter"
-              />
-              <Button type="button" variant="secondary" onClick={addCompany}>
-                إضافة
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {companies.map((company) => (
-                <Badge key={company} variant="secondary" className="gap-1">
-                  {company}
-                  <button onClick={() => setCompanies(companies.filter((item) => item !== company))}>
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
           </div>
         </div>
 
