@@ -109,7 +109,7 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
       required_skills: skills,
       required_languages: langs,
       is_government: isGovernment,
-    });
+    } as any);
     setSubmitting(false);
 
     if (error) {
