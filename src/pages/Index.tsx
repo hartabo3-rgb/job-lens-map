@@ -174,11 +174,46 @@ const Index = () => {
     setTowers((data as unknown as CommercialTower[]) ?? []);
   };
 
+  const loadTowerCompanies = async () => {
+    const { data, error } = await supabase
+      .from("tower_companies" as any)
+      .select("*")
+      .order("company_name", { ascending: true });
+    if (error) {
+      console.error(error);
+      return;
+    }
+    setTowerCompanies((data as unknown as TowerCompany[]) ?? []);
+  };
+
   useEffect(() => {
     loadJobs();
     loadCompanies();
     loadTowers();
+    loadTowerCompanies();
   }, []);
+
+  useEffect(() => {
+    const logoPaths = [...companies, ...towerCompanies]
+      .map((item) => item.logo_url)
+      .filter((path): path is string => Boolean(path && !logoUrls[path]));
+    if (logoPaths.length === 0) return;
+
+    supabase.storage
+      .from("company-logos")
+      .createSignedUrls(logoPaths, 60 * 60)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error(error);
+          return;
+        }
+        const nextUrls: Record<string, string> = {};
+        data?.forEach((item) => {
+          if (item.path && item.signedUrl) nextUrls[item.path] = item.signedUrl;
+        });
+        setLogoUrls((prev) => ({ ...prev, ...nextUrls }));
+      });
+  }, [companies, towerCompanies, logoUrls]);
 
   // Auto-enable post_job mode for employers when nothing else is active
   useEffect(() => {
@@ -218,9 +253,11 @@ const Index = () => {
       (tower) =>
         tower.tower_name.toLowerCase().includes(q) ||
         tower.location_name.toLowerCase().includes(q) ||
-        (tower.companies ?? []).some((company) => company.toLowerCase().includes(q))
+        towerCompanies.some(
+          (company) => company.tower_id === tower.id && company.company_name.toLowerCase().includes(q)
+        )
     );
-  }, [towers, search]);
+  }, [towers, search, towerCompanies]);
 
   const handleApply = async (job: Job) => {
     if (!user || !profile) {
