@@ -542,6 +542,57 @@ const Index = () => {
             </Popup>
           </Marker>
         ))}
+
+        {/* Commercial tower markers */}
+        {filteredTowers.map((tower) => (
+          <Marker
+            key={`tower-${tower.id}`}
+            position={[tower.latitude, tower.longitude]}
+            icon={towerIcon}
+          >
+            <Popup>
+              <div className="p-4 font-sans" dir="rtl">
+                <div className="flex items-start gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-warning flex items-center justify-center flex-shrink-0">
+                    <Warehouse className="w-4 h-4 text-warning-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-base text-foreground leading-tight m-0">
+                      {tower.tower_name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground m-0 mt-0.5">برج تجاري</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+                  <MapPin className="w-3 h-3" />
+                  <span>{tower.location_name}</span>
+                </div>
+
+                {tower.description && (
+                  <p className="text-xs text-foreground/80 line-clamp-3 mb-3 leading-relaxed">
+                    {tower.description}
+                  </p>
+                )}
+
+                <div className="space-y-1">
+                  <div className="text-xs font-semibold text-foreground">الشركات الموجودة:</div>
+                  {(tower.companies ?? []).length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {(tower.companies ?? []).map((company) => (
+                        <Badge key={company} variant="secondary" className="text-[10px]">
+                          {company}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground m-0">لم تتم إضافة شركات بعد</p>
+                  )}
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
 
       <PostJobDialog
@@ -569,6 +620,23 @@ const Index = () => {
         location={pendingLocation}
         onSaved={() => {
           loadCompanies();
+          setPendingLocation(null);
+          setClickMode("post_job");
+        }}
+      />
+
+      <AddCommercialTowerDialog
+        open={addTowerOpen}
+        onOpenChange={(o) => {
+          setAddTowerOpen(o);
+          if (!o) {
+            setPendingLocation(null);
+            setClickMode("post_job");
+          }
+        }}
+        location={pendingLocation}
+        onSaved={() => {
+          loadTowers();
           setPendingLocation(null);
           setClickMode("post_job");
         }}
