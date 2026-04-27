@@ -354,7 +354,8 @@ const Index = () => {
   };
 
   const handleMapClick = (lat: number, lng: number) => {
-    if (profile?.role !== "employer" || clickMode === "none") return;
+    if (clickMode === "none") return;
+    if (clickMode === "add_tower" ? !isAdmin : profile?.role !== "employer") return;
 
     if (!isInsideSaudiArabia(lat, lng)) {
       toast.error("الموقع يجب أن يكون داخل حدود المملكة العربية السعودية");
@@ -377,6 +378,10 @@ const Index = () => {
   };
 
   const startAddTowerFlow = () => {
+    if (!isAdmin) {
+      toast.error("إضافة الأبراج متاحة لحساب المدير فقط");
+      return;
+    }
     setClickMode("add_tower");
     toast.info("اضغط على الخريطة داخل السعودية لتحديد موقع البرج التجاري");
   };
@@ -434,7 +439,7 @@ const Index = () => {
       </div>
 
       {/* Hint for employers */}
-      {profile?.role === "employer" && clickMode !== "none" && (
+      {(profile?.role === "employer" || isAdmin) && clickMode !== "none" && (
         <div className="absolute bottom-6 inset-x-0 z-[999] pointer-events-none">
           <div className="container mx-auto px-4">
             <div className="max-w-md mx-auto pointer-events-auto bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-elegant px-4 py-3 text-center text-sm flex items-center justify-between gap-3">
@@ -444,7 +449,7 @@ const Index = () => {
                   ? "اضغط على أي نقطة داخل السعودية لنشر وظيفة"
                   : clickMode === "add_company"
                     ? "اضغط على أي نقطة داخل السعودية لتحديد موقع الشركة"
-                    : "اضغط على أي نقطة داخل السعودية لتحديد موقع البرج التجاري"}
+                    : "اضغط على أي نقطة داخل السعودية لتحديد موقع البرج التجاري — للمدير فقط"}
               </div>
               {clickMode !== "post_job" && (
                 <Button
