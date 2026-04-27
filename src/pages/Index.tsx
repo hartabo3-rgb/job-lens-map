@@ -649,14 +649,35 @@ const Index = () => {
                   </p>
                 )}
 
-                <div className="space-y-1">
-                  <div className="text-xs font-semibold text-foreground">الشركات الموجودة:</div>
-                  {(tower.companies ?? []).length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {(tower.companies ?? []).map((company) => (
-                        <Badge key={company} variant="secondary" className="text-[10px]">
-                          {company}
-                        </Badge>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-xs font-semibold text-foreground">الشركات الموجودة:</div>
+                    {profile?.role === "employer" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => {
+                          setSelectedTower(tower);
+                          setAddTowerCompanyOpen(true);
+                        }}
+                      >
+                        إضافة شركة
+                      </Button>
+                    )}
+                  </div>
+                  {getTowerCompanies(tower.id).length > 0 ? (
+                    <div className="space-y-1.5">
+                      {getTowerCompanies(tower.id).map((company) => (
+                        <details key={company.id} className="group rounded-md border border-border bg-muted/30 px-2 py-1.5">
+                          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-medium text-foreground">
+                            <span className="truncate">{company.company_name}</span>
+                            <span className="text-muted-foreground group-open:hidden">عرض</span>
+                          </summary>
+                          <div className="mt-2">
+                            {renderCompanyDetails(company, "tower")}
+                          </div>
+                        </details>
                       ))}
                     </div>
                   ) : (
