@@ -264,7 +264,10 @@ const Index = () => {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
-      <Navbar onAddCompanyLocation={startAddCompanyFlow} />
+      <Navbar
+        onAddCompanyLocation={startAddCompanyFlow}
+        onAddCommercialTower={startAddTowerFlow}
+      />
 
       {/* Search bar */}
       <div className="absolute top-24 inset-x-0 z-[999] pointer-events-none">
@@ -278,12 +281,12 @@ const Index = () => {
                 onChange={(e) => setSearch(e.target.value)}
                 className="pr-12 h-12 bg-card/95 backdrop-blur-md border-border shadow-elegant rounded-xl text-base"
               />
-              {(filteredJobs.length > 0 || filteredCompanies.length > 0) && (
+              {(filteredJobs.length > 0 || filteredCompanies.length > 0 || filteredTowers.length > 0) && (
                 <Badge
                   variant="secondary"
                   className="absolute left-3 top-1/2 -translate-y-1/2 bg-primary/10 text-primary border-0"
                 >
-                  {filteredJobs.length} وظيفة · {filteredCompanies.length} شركة
+                  {filteredJobs.length} وظيفة · {filteredCompanies.length} شركة · {filteredTowers.length} برج
                 </Badge>
               )}
             </div>
@@ -302,6 +305,10 @@ const Index = () => {
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
                 موقع شركة
               </Badge>
+              <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
+                <span className="w-2.5 h-2.5 rounded-full bg-warning" />
+                برج تجاري
+              </Badge>
             </div>
           </div>
         </div>
@@ -316,9 +323,11 @@ const Index = () => {
                 <span className="font-semibold text-primary">💡 </span>
                 {clickMode === "post_job"
                   ? "اضغط على أي نقطة داخل السعودية لنشر وظيفة"
-                  : "اضغط على أي نقطة داخل السعودية لتحديد موقع الشركة"}
+                  : clickMode === "add_company"
+                    ? "اضغط على أي نقطة داخل السعودية لتحديد موقع الشركة"
+                    : "اضغط على أي نقطة داخل السعودية لتحديد موقع البرج التجاري"}
               </div>
-              {clickMode === "add_company" && (
+              {clickMode !== "post_job" && (
                 <Button
                   size="sm"
                   variant="ghost"
