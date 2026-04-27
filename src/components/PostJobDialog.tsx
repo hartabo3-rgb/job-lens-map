@@ -23,7 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { X, Landmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { EDUCATION_LEVELS, EXPERIENCE_RANGES, LANGUAGES } from "@/lib/constants";
+import { APPLICANT_LIMIT_OPTIONS, EDUCATION_LEVELS, EXPERIENCE_RANGES, JOB_DURATION_OPTIONS, LANGUAGES } from "@/lib/constants";
 import { toast } from "sonner";
 
 type Props = {
@@ -37,7 +37,10 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [applicationUrl, setApplicationUrl] = useState("");
   const [locationName, setLocationName] = useState("");
+  const [duration, setDuration] = useState<string>("24");
+  const [maxApplicants, setMaxApplicants] = useState<string>("10");
   const [education, setEducation] = useState<string>("");
   const [field, setField] = useState("");
   const [experience, setExperience] = useState<string>("");
@@ -57,7 +60,10 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
     if (!open) {
       setTitle("");
       setDescription("");
+      setApplicationUrl("");
       setLocationName("");
+      setDuration("24");
+      setMaxApplicants("10");
       setEducation("");
       setField("");
       setExperience("");
@@ -91,9 +97,12 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
       employer_id: user.id,
       title: title.trim(),
       description: description.trim(),
+      application_url: applicationUrl.trim() || null,
       latitude: location.lat,
       longitude: location.lng,
       location_name: locationName.trim(),
+      duration_hours: duration === "until_full" ? null : Number(duration),
+      max_applicants: Number(maxApplicants),
       required_education: (education || null) as any,
       required_field: field.trim() || null,
       required_experience: (experience || null) as any,
