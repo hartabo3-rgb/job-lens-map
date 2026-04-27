@@ -152,12 +152,46 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
           </div>
 
           <div className="space-y-2">
+            <Label>رابط التقديم على الوظيفة</Label>
+            <Input
+              value={applicationUrl}
+              onChange={(e) => setApplicationUrl(e.target.value)}
+              placeholder="https://example.com/apply"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label>اسم الموقع *</Label>
             <Input
               value={locationName}
               onChange={(e) => setLocationName(e.target.value)}
               placeholder="مثال: الرياض - حي العليا"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>مدة ظهور الوظيفة</Label>
+              <Select value={duration} onValueChange={setDuration}>
+                <SelectTrigger><SelectValue placeholder="اختر المدة" /></SelectTrigger>
+                <SelectContent>
+                  {JOB_DURATION_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>عدد المتقدمين</Label>
+              <Select value={maxApplicants} onValueChange={setMaxApplicants}>
+                <SelectTrigger><SelectValue placeholder="اختر العدد" /></SelectTrigger>
+                <SelectContent>
+                  {APPLICANT_LIMIT_OPTIONS.map((count) => (
+                    <SelectItem key={count} value={count}>{count} متقدم</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
