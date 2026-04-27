@@ -1,4 +1,4 @@
-import { Briefcase, MapPin, Building2 } from "lucide-react";
+import { Briefcase, MapPin, Building2, Warehouse } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,9 +13,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 type NavbarProps = {
   onAddCompanyLocation?: () => void;
+  onAddCommercialTower?: () => void;
 };
 
-export const Navbar = ({ onAddCompanyLocation }: NavbarProps = {}) => {
+export const Navbar = ({ onAddCompanyLocation, onAddCommercialTower }: NavbarProps = {}) => {
   const { user, profile, signOut } = useAuth();
   const location = useLocation();
 
@@ -85,6 +86,15 @@ export const Navbar = ({ onAddCompanyLocation }: NavbarProps = {}) => {
                           >
                             <Building2 className="w-4 h-4 ml-2 text-success" />
                             إضافة موقع شركة
+                          </DropdownMenuItem>
+                        )}
+                        {onAddCommercialTower && (
+                          <DropdownMenuItem
+                            onClick={onAddCommercialTower}
+                            className="cursor-pointer"
+                          >
+                            <Warehouse className="w-4 h-4 ml-2 text-warning" />
+                            إضافة برج تجاري
                           </DropdownMenuItem>
                         )}
                       </>

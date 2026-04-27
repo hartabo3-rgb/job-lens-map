@@ -23,7 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { X, Landmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { EDUCATION_LEVELS, EXPERIENCE_RANGES, LANGUAGES } from "@/lib/constants";
+import { APPLICANT_LIMIT_OPTIONS, EDUCATION_LEVELS, EXPERIENCE_RANGES, JOB_DURATION_OPTIONS, LANGUAGES } from "@/lib/constants";
 import { toast } from "sonner";
 
 type Props = {
@@ -37,7 +37,10 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [applicationUrl, setApplicationUrl] = useState("");
   const [locationName, setLocationName] = useState("");
+  const [duration, setDuration] = useState<string>("24");
+  const [maxApplicants, setMaxApplicants] = useState<string>("10");
   const [education, setEducation] = useState<string>("");
   const [field, setField] = useState("");
   const [experience, setExperience] = useState<string>("");
@@ -57,7 +60,10 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
     if (!open) {
       setTitle("");
       setDescription("");
+      setApplicationUrl("");
       setLocationName("");
+      setDuration("24");
+      setMaxApplicants("10");
       setEducation("");
       setField("");
       setExperience("");
@@ -91,16 +97,19 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
       employer_id: user.id,
       title: title.trim(),
       description: description.trim(),
+      application_url: applicationUrl.trim() || null,
       latitude: location.lat,
       longitude: location.lng,
       location_name: locationName.trim(),
+      duration_hours: duration === "until_full" ? null : Number(duration),
+      max_applicants: Number(maxApplicants),
       required_education: (education || null) as any,
       required_field: field.trim() || null,
       required_experience: (experience || null) as any,
       required_skills: skills,
       required_languages: langs,
       is_government: isGovernment,
-    });
+    } as any);
     setSubmitting(false);
 
     if (error) {
@@ -143,12 +152,46 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
           </div>
 
           <div className="space-y-2">
+            <Label>رابط التقديم على الوظيفة</Label>
+            <Input
+              value={applicationUrl}
+              onChange={(e) => setApplicationUrl(e.target.value)}
+              placeholder="https://example.com/apply"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label>اسم الموقع *</Label>
             <Input
               value={locationName}
               onChange={(e) => setLocationName(e.target.value)}
               placeholder="مثال: الرياض - حي العليا"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>مدة ظهور الوظيفة</Label>
+              <Select value={duration} onValueChange={setDuration}>
+                <SelectTrigger><SelectValue placeholder="اختر المدة" /></SelectTrigger>
+                <SelectContent>
+                  {JOB_DURATION_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>عدد المتقدمين</Label>
+              <Select value={maxApplicants} onValueChange={setMaxApplicants}>
+                <SelectTrigger><SelectValue placeholder="اختر العدد" /></SelectTrigger>
+                <SelectContent>
+                  {APPLICANT_LIMIT_OPTIONS.map((count) => (
+                    <SelectItem key={count} value={count}>{count} متقدم</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
