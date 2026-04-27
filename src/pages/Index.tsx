@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { PostJobDialog } from "@/components/PostJobDialog";
 import { AddCompanyLocationDialog } from "@/components/AddCompanyLocationDialog";
 import { AddCommercialTowerDialog } from "@/components/AddCommercialTowerDialog";
+import { AddTowerCompanyDialog } from "@/components/AddTowerCompanyDialog";
 import { SaudiOverlay } from "@/components/SaudiOverlay";
 import "leaflet/dist/leaflet.css";
 
@@ -65,6 +66,7 @@ type CompanyLocation = {
   contact_phone: string | null;
   recruitment_email: string | null;
   recruitment_url: string | null;
+  logo_url: string | null;
 };
 
 type CommercialTower = {
@@ -76,6 +78,19 @@ type CommercialTower = {
   longitude: number;
   companies: string[] | null;
   description: string | null;
+};
+
+type TowerCompany = {
+  id: string;
+  tower_id: string;
+  employer_id: string;
+  company_name: string;
+  description: string | null;
+  logo_url: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  recruitment_email: string | null;
+  recruitment_url: string | null;
 };
 
 type ClickMode = "none" | "post_job" | "add_company" | "add_tower";
@@ -97,14 +112,18 @@ const Index = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [companies, setCompanies] = useState<CompanyLocation[]>([]);
   const [towers, setTowers] = useState<CommercialTower[]>([]);
+  const [towerCompanies, setTowerCompanies] = useState<TowerCompany[]>([]);
+  const [logoUrls, setLogoUrls] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [postJobOpen, setPostJobOpen] = useState(false);
   const [addCompanyOpen, setAddCompanyOpen] = useState(false);
   const [addTowerOpen, setAddTowerOpen] = useState(false);
+  const [addTowerCompanyOpen, setAddTowerCompanyOpen] = useState(false);
+  const [selectedTower, setSelectedTower] = useState<CommercialTower | null>(null);
   const [clickMode, setClickMode] = useState<ClickMode>("none");
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const jobIcon = useMemo(() => createMarkerIcon("job"), []);
   const govIcon = useMemo(() => createMarkerIcon("gov_job"), []);
   const companyIcon = useMemo(() => createMarkerIcon("company"), []);
