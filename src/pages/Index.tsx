@@ -736,6 +736,19 @@ const Index = () => {
           setClickMode("post_job");
         }}
       />
+
+      <AddTowerCompanyDialog
+        open={addTowerCompanyOpen}
+        onOpenChange={(open) => {
+          setAddTowerCompanyOpen(open);
+          if (!open) setSelectedTower(null);
+        }}
+        tower={selectedTower}
+        onSaved={() => {
+          loadTowerCompanies();
+          setSelectedTower(null);
+        }}
+      />
     </div>
   );
 };
