@@ -351,29 +351,10 @@ const Index = () => {
           if (map) mapRef.current = map;
         }}
       >
-        <LayersControl position="topleft">
-          <LayersControl.BaseLayer checked name="خريطة عادية">
-            <TileLayer
-              attribution='&copy; Google Maps'
-              url="https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-              subdomains={["0", "1", "2", "3"]}
-            />
-          </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="قمر صناعي">
-            <TileLayer
-              attribution='&copy; Google Satellite'
-              url="https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
-              subdomains={["0", "1", "2", "3"]}
-            />
-          </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="هجين (قمر + أسماء)">
-            <TileLayer
-              attribution='&copy; Google Hybrid'
-              url="https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
-              subdomains={["0", "1", "2", "3"]}
-            />
-          </LayersControl.BaseLayer>
-        </LayersControl>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
         <SaudiOverlay />
 
@@ -429,6 +410,18 @@ const Index = () => {
                 </p>
 
                 <div className="flex flex-wrap gap-1 mb-3">
+                  {job.max_applicants && (
+                    <Badge variant="secondary" className="text-[10px] gap-1">
+                      <Users className="w-3 h-3" />
+                      {job.max_applicants} متقدم
+                    </Badge>
+                  )}
+                  {job.duration_hours && (
+                    <Badge variant="secondary" className="text-[10px] gap-1">
+                      <Clock className="w-3 h-3" />
+                      {job.duration_hours} ساعة
+                    </Badge>
+                  )}
                   {job.required_education && (
                     <Badge variant="secondary" className="text-[10px] gap-1">
                       <GraduationCap className="w-3 h-3" />
@@ -443,7 +436,13 @@ const Index = () => {
                 </div>
 
                 <Button
-                  onClick={() => handleApply(job)}
+                  onClick={() => {
+                    if (job.application_url) {
+                      window.open(job.application_url, "_blank", "noopener,noreferrer");
+                      return;
+                    }
+                    handleApply(job);
+                  }}
                   size="sm"
                   className={`w-full ${
                     job.is_government
@@ -451,7 +450,7 @@ const Index = () => {
                       : "bg-gradient-primary hover:opacity-90"
                   }`}
                 >
-                  تقدّم الآن
+                  {job.application_url ? "فتح رابط التقديم" : "تقدّم الآن"}
                 </Button>
               </div>
             </Popup>
