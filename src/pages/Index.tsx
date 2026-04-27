@@ -192,6 +192,17 @@ const Index = () => {
     );
   }, [companies, search]);
 
+  const filteredTowers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return towers;
+    return towers.filter(
+      (tower) =>
+        tower.tower_name.toLowerCase().includes(q) ||
+        tower.location_name.toLowerCase().includes(q) ||
+        (tower.companies ?? []).some((company) => company.toLowerCase().includes(q))
+    );
+  }, [towers, search]);
+
   const handleApply = async (job: Job) => {
     if (!user || !profile) {
       toast.info("سجّل دخولك أولاً للتقدّم على الوظيفة");
@@ -236,12 +247,19 @@ const Index = () => {
       setPostJobOpen(true);
     } else if (clickMode === "add_company") {
       setAddCompanyOpen(true);
+    } else if (clickMode === "add_tower") {
+      setAddTowerOpen(true);
     }
   };
 
   const startAddCompanyFlow = () => {
     setClickMode("add_company");
     toast.info("اضغط على الخريطة داخل السعودية لتحديد موقع الشركة");
+  };
+
+  const startAddTowerFlow = () => {
+    setClickMode("add_tower");
+    toast.info("اضغط على الخريطة داخل السعودية لتحديد موقع البرج التجاري");
   };
 
   return (
