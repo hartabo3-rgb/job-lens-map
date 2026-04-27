@@ -96,27 +96,32 @@ const MapClickHandler = ({
 const Index = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [companies, setCompanies] = useState<CompanyLocation[]>([]);
+  const [towers, setTowers] = useState<CommercialTower[]>([]);
   const [search, setSearch] = useState("");
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [postJobOpen, setPostJobOpen] = useState(false);
   const [addCompanyOpen, setAddCompanyOpen] = useState(false);
+  const [addTowerOpen, setAddTowerOpen] = useState(false);
   const [clickMode, setClickMode] = useState<ClickMode>("none");
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const jobIcon = useMemo(() => createMarkerIcon("job"), []);
   const govIcon = useMemo(() => createMarkerIcon("gov_job"), []);
   const companyIcon = useMemo(() => createMarkerIcon("company"), []);
+  const towerIcon = useMemo(() => createMarkerIcon("tower"), []);
   const mapRef = useRef<L.Map | null>(null);
 
   const loadJobs = async () => {
     const { data, error } = await supabase
       .from("jobs")
       .select(`
-        id, employer_id, title, description, latitude, longitude, location_name, is_government,
+        id, employer_id, title, description, latitude, longitude, location_name, application_url,
+        duration_hours, max_applicants, expires_at, is_government,
         required_education, required_field, required_experience, required_skills, required_languages,
         employer:profiles!jobs_employer_id_fkey ( full_name, company_name )
       `)
       .eq("status", "active")
+      .or("expires_at.is.null,expires_at.gt.now()")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -138,9 +143,22 @@ const Index = () => {
     setCompanies((data as unknown as CompanyLocation[]) ?? []);
   };
 
+  const loadTowers = async () => {
+    const { data, error } = await supabase
+      .from("commercial_towers")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error(error);
+      return;
+    }
+    setTowers((data as unknown as CommercialTower[]) ?? []);
+  };
+
   useEffect(() => {
     loadJobs();
     loadCompanies();
+    loadTowers();
   }, []);
 
   // Auto-enable post_job mode for employers when nothing else is active
