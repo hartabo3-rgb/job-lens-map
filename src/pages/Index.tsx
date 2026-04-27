@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LayersControl, MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import {
   Briefcase,
   Building2,
+  Clock,
   GraduationCap,
   Landmark,
   Mail,
   MapPin,
   Phone,
   Search,
+  Users,
+  Warehouse,
   ExternalLink,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +28,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { PostJobDialog } from "@/components/PostJobDialog";
 import { AddCompanyLocationDialog } from "@/components/AddCompanyLocationDialog";
+import { AddCommercialTowerDialog } from "@/components/AddCommercialTowerDialog";
 import { SaudiOverlay } from "@/components/SaudiOverlay";
 import "leaflet/dist/leaflet.css";
 
@@ -36,6 +40,10 @@ type Job = {
   latitude: number;
   longitude: number;
   location_name: string;
+  application_url: string | null;
+  duration_hours: number | null;
+  max_applicants: number | null;
+  expires_at: string | null;
   is_government: boolean;
   required_education: string | null;
   required_field: string | null;
@@ -59,7 +67,18 @@ type CompanyLocation = {
   recruitment_url: string | null;
 };
 
-type ClickMode = "none" | "post_job" | "add_company";
+type CommercialTower = {
+  id: string;
+  employer_id: string;
+  tower_name: string;
+  location_name: string;
+  latitude: number;
+  longitude: number;
+  companies: string[] | null;
+  description: string | null;
+};
+
+type ClickMode = "none" | "post_job" | "add_company" | "add_tower";
 
 const MapClickHandler = ({
   onMapClick,
