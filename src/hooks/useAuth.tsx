@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq("role", "admin")
     ]);
     setProfile((data as Profile) ?? null);
-    setIsAdmin(((roles as { role: string }[] | null) ?? []).some((item) => item.role === "admin"));
+    setIsAdmin(((roles as unknown as { role: string }[] | null) ?? []).some((item) => item.role === "admin"));
   };
 
   useEffect(() => {
