@@ -103,6 +103,7 @@ export type Database = {
           id: string
           latitude: number
           location_name: string
+          logo_url: string | null
           longitude: number
           recruitment_email: string | null
           recruitment_url: string | null
@@ -118,6 +119,7 @@ export type Database = {
           id?: string
           latitude: number
           location_name: string
+          logo_url?: string | null
           longitude: number
           recruitment_email?: string | null
           recruitment_url?: string | null
@@ -133,6 +135,7 @@ export type Database = {
           id?: string
           latitude?: number
           location_name?: string
+          logo_url?: string | null
           longitude?: number
           recruitment_email?: string | null
           recruitment_url?: string | null
@@ -283,6 +286,80 @@ export type Database = {
         }
         Relationships: []
       }
+      tower_companies: {
+        Row: {
+          company_name: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          employer_id: string
+          id: string
+          logo_url: string | null
+          recruitment_email: string | null
+          recruitment_url: string | null
+          tower_id: string
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          employer_id: string
+          id?: string
+          logo_url?: string | null
+          recruitment_email?: string | null
+          recruitment_url?: string | null
+          tower_id: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          employer_id?: string
+          id?: string
+          logo_url?: string | null
+          recruitment_email?: string | null
+          recruitment_url?: string | null
+          tower_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tower_companies_tower_id_fkey"
+            columns: ["tower_id"]
+            isOneToOne: false
+            referencedRelation: "commercial_towers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -292,8 +369,16 @@ export type Database = {
         Args: { p_applicant_id: string; p_job_id: string }
         Returns: number
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       education_level: "ثانوية" | "دبلوم" | "بكالوريوس" | "ماجستير" | "دكتوراه"
       experience_range:
         | "أقل من سنة"
@@ -430,6 +515,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       education_level: ["ثانوية", "دبلوم", "بكالوريوس", "ماجستير", "دكتوراه"],
       experience_range: [
         "أقل من سنة",
