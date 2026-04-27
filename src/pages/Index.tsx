@@ -259,6 +259,69 @@ const Index = () => {
     );
   }, [towers, search, towerCompanies]);
 
+  const getTowerCompanies = (towerId: string) =>
+    towerCompanies
+      .filter((company) => company.tower_id === towerId)
+      .sort((a, b) => a.company_name.localeCompare(b.company_name, "ar"));
+
+  const renderCompanyDetails = (company: CompanyLocation | TowerCompany, variant: "standalone" | "tower" = "standalone") => (
+    <div className="space-y-2 rounded-md border border-border bg-muted/30 p-2">
+      <div className="flex items-start gap-2">
+        {company.logo_url && logoUrls[company.logo_url] ? (
+          <img src={logoUrls[company.logo_url]} alt={`شعار ${company.company_name}`} className="w-10 h-10 rounded-md object-contain bg-background border border-border" />
+        ) : (
+          <div className="w-10 h-10 rounded-md bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
+            <Building2 className="w-5 h-5 text-white" />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <h4 className="font-bold text-sm text-foreground leading-tight m-0">{company.company_name}</h4>
+          {variant === "standalone" && "location_name" in company && (
+            <p className="text-xs text-muted-foreground m-0 mt-0.5">{company.location_name}</p>
+          )}
+        </div>
+      </div>
+
+      {company.description && (
+        <p className="text-xs text-foreground/80 leading-relaxed m-0">{company.description}</p>
+      )}
+
+      <div className="space-y-1">
+        {company.contact_email && (
+          <a href={`mailto:${company.contact_email}`} className="flex items-center gap-1.5 text-xs text-foreground/80 hover:text-primary">
+            <Mail className="w-3 h-3" /> {company.contact_email}
+          </a>
+        )}
+        {company.contact_phone && (
+          <div className="flex items-center gap-1.5 text-xs text-foreground/80">
+            <Phone className="w-3 h-3" /> {company.contact_phone}
+          </div>
+        )}
+      </div>
+
+      {(company.recruitment_email || company.recruitment_url) && (
+        <div className="flex flex-col gap-1.5">
+          {company.recruitment_url && (
+            <Button asChild size="sm" className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:opacity-90">
+              <a href={company.recruitment_url} target="_blank" rel="noreferrer">
+                <ExternalLink className="w-3 h-3 ml-1" />
+                صفحة التوظيف
+              </a>
+            </Button>
+          )}
+          {company.recruitment_email && (
+            <Button asChild size="sm" variant="outline" className="w-full">
+              <a href={`mailto:${company.recruitment_email}`}>
+                <Mail className="w-3 h-3 ml-1" />
+                {company.recruitment_email}
+              </a>
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
   const handleApply = async (job: Job) => {
     if (!user || !profile) {
       toast.info("سجّل دخولك أولاً للتقدّم على الوظيفة");
