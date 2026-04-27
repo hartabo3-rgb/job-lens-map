@@ -591,9 +591,13 @@ const Index = () => {
             <Popup>
               <div className="p-4 font-sans" dir="rtl">
                 <div className="flex items-start gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="w-4 h-4 text-white" />
-                  </div>
+                  {c.logo_url && logoUrls[c.logo_url] ? (
+                    <img src={logoUrls[c.logo_url]} alt={`شعار ${c.company_name}`} className="w-8 h-8 rounded-lg object-contain bg-background border border-border flex-shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                      <Building2 className="w-4 h-4 text-white" />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-base text-foreground leading-tight m-0">
                       {c.company_name}
@@ -607,61 +611,7 @@ const Index = () => {
                   <span>{c.location_name}</span>
                 </div>
 
-                {c.description && (
-                  <p className="text-xs text-foreground/80 line-clamp-3 mb-3 leading-relaxed">
-                    {c.description}
-                  </p>
-                )}
-
-                <div className="space-y-1 mb-3">
-                  {c.contact_email && (
-                    <a
-                      href={`mailto:${c.contact_email}`}
-                      className="flex items-center gap-1.5 text-xs text-foreground/80 hover:text-primary"
-                    >
-                      <Mail className="w-3 h-3" /> {c.contact_email}
-                    </a>
-                  )}
-                  {c.contact_phone && (
-                    <div className="flex items-center gap-1.5 text-xs text-foreground/80">
-                      <Phone className="w-3 h-3" /> {c.contact_phone}
-                    </div>
-                  )}
-                </div>
-
-                {(c.recruitment_email || c.recruitment_url) && (
-                  <div className="flex flex-col gap-1.5">
-                    {c.recruitment_url && (
-                      <Button
-                        asChild
-                        size="sm"
-                        className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:opacity-90"
-                      >
-                        <a
-                          href={c.recruitment_url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <ExternalLink className="w-3 h-3 ml-1" />
-                          صفحة التوظيف
-                        </a>
-                      </Button>
-                    )}
-                    {c.recruitment_email && (
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <a href={`mailto:${c.recruitment_email}`}>
-                          <Mail className="w-3 h-3 ml-1" />
-                          {c.recruitment_email}
-                        </a>
-                      </Button>
-                    )}
-                  </div>
-                )}
+                {renderCompanyDetails(c)}
               </div>
             </Popup>
           </Marker>
