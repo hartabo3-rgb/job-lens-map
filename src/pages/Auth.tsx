@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 
 const Auth = () => {
@@ -63,6 +64,19 @@ const Auth = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    localStorage.setItem("pending_auth_role", role);
+    setLoading(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+      extraParams: { prompt: "select_account" },
+    });
+    setLoading(false);
+    if (result.error) {
+      toast.error("تعذّر تسجيل الدخول بواسطة Google");
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-muted to-background">
       <div className="container mx-auto px-4 py-6">
@@ -84,6 +98,34 @@ const Auth = () => {
               ? "أدخل بياناتك للوصول إلى حسابك"
               : "اختر دورك ثم أنشئ حسابك خلال دقيقة"}
           </p>
+
+          <div className="mb-5 space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setRole("job_seeker")}
+                className={`p-3 rounded-xl border-2 text-right transition-smooth ${
+                  role === "job_seeker" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                }`}
+              >
+                <UserIcon className="w-5 h-5 mb-1 text-primary" />
+                <div className="font-semibold text-sm">باحث عن عمل</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("employer")}
+                className={`p-3 rounded-xl border-2 text-right transition-smooth ${
+                  role === "employer" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                }`}
+              >
+                <Briefcase className="w-5 h-5 mb-1 text-primary" />
+                <div className="font-semibold text-sm">صاحب عمل</div>
+              </button>
+            </div>
+            <Button onClick={handleGoogleSignIn} disabled={loading} variant="outline" className="w-full">
+              الدخول بواسطة Google
+            </Button>
+          </div>
 
           <Tabs value={mode} onValueChange={(v) => setMode(v as any)}>
             <TabsList className="grid grid-cols-2 mb-5">
