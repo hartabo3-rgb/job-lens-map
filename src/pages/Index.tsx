@@ -9,7 +9,6 @@ import {
   Landmark,
   LocateFixed,
   Mail,
-  Megaphone,
   MapPin,
   Phone,
   Search,
@@ -140,6 +139,7 @@ const Index = () => {
   const [logoUrls, setLogoUrls] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [postJobOpen, setPostJobOpen] = useState(false);
   const [addCompanyOpen, setAddCompanyOpen] = useState(false);
   const [addTowerOpen, setAddTowerOpen] = useState(false);
@@ -153,7 +153,9 @@ const Index = () => {
   const govIcon = useMemo(() => createMarkerIcon("gov_job"), []);
   const companyIcon = useMemo(() => createMarkerIcon("company"), []);
   const towerIcon = useMemo(() => createMarkerIcon("tower"), []);
+  const userIcon = useMemo(() => createMarkerIcon("user"), []);
   const mapRef = useRef<L.Map | null>(null);
+  const autoLocatedRef = useRef(false);
 
   const loadJobs = async () => {
     const { data, error } = await supabase
