@@ -497,6 +497,7 @@ const Index = () => {
       <Navbar
         onAddCompanyLocation={startAddCompanyFlow}
         onAddCommercialTower={startAddTowerFlow}
+        announcements={navAnnouncements}
       />
 
       {/* Search bar */}
@@ -520,32 +521,6 @@ const Index = () => {
                 </Badge>
               )}
             </div>
-
-            {(announcements.length > 0 || governmentAnnouncements.length > 0) && (
-              <div className="mt-3 grid gap-2">
-                {[...announcements, ...governmentAnnouncements.map((item) => ({
-                  id: item.id,
-                  title: item.title,
-                  body: `${item.agency_name}${item.location_name ? ` · ${item.location_name}` : ""}`,
-                  link_url: item.application_url,
-                }))].slice(0, 3).map((item) => (
-                  <a
-                    key={item.id}
-                    href={item.link_url || undefined}
-                    target={item.link_url ? "_blank" : undefined}
-                    rel="noreferrer"
-                    className="block rounded-xl border border-border bg-card/95 px-4 py-2 text-right shadow-soft backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <Megaphone className="w-4 h-4 text-primary" />
-                      {item.title}
-                    </div>
-                    {item.body && <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{item.body}</div>}
-                  </a>
-                ))}
-              </div>
-            )}
-
             {/* Legend */}
             <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
               <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
