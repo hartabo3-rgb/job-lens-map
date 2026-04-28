@@ -421,6 +421,34 @@ const Index = () => {
     toast.info("اضغط على الخريطة داخل السعودية لتحديد موقع البرج التجاري");
   };
 
+  const locateMe = () => {
+    if (!navigator.geolocation) {
+      toast.error("تحديد الموقع غير مدعوم في هذا المتصفح");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        mapRef.current?.setView([latitude, longitude], 14);
+        toast.success("تم الانتقال إلى موقعك الحالي");
+      },
+      () => toast.error("تعذّر تحديد موقعك، تأكد من تفعيل GPS ومنح الإذن"),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const getJobIcon = (job: Job) => {
+    if (job.sector === "government" || job.is_government) return govIcon;
+    if (job.sector === "semi_government") return semiGovIcon;
+    return jobIcon;
+  };
+
+  const getJobLabel = (job: Job) => {
+    if (job.sector === "government" || job.is_government) return "وظيفة حكومية";
+    if (job.sector === "semi_government") return "وظيفة شبه حكومية";
+    return "وظيفة قطاع خاص";
+  };
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       <Navbar
