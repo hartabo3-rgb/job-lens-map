@@ -19,7 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { X, Landmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -47,7 +46,7 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
   const [langs, setLangs] = useState<string[]>([]);
-  const [isGovernment, setIsGovernment] = useState(false);
+  const [sector, setSector] = useState<"private" | "semi_government" | "government">("private");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -70,7 +69,7 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
       setSkills([]);
       setSkillInput("");
       setLangs([]);
-      setIsGovernment(false);
+      setSector("private");
     }
   }, [open, location]);
 
@@ -108,7 +107,8 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
       required_experience: (experience || null) as any,
       required_skills: skills,
       required_languages: langs,
-      is_government: isGovernment,
+      is_government: sector === "government",
+      sector,
     } as any);
     setSubmitting(false);
 
@@ -161,7 +161,7 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
           </div>
 
           <div className="space-y-2">
-            <Label>اسم الموقع *</Label>
+            <Label>الانتقال الى العنوان على الخريطه *</Label>
             <Input
               value={locationName}
               onChange={(e) => setLocationName(e.target.value)}
@@ -273,15 +273,20 @@ export const PostJobDialog = ({ open, onOpenChange, location, onPosted }: Props)
               ))}
             </div>
           </div>
-          <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2">
-            <div className="flex items-center gap-2">
-              <Landmark className="w-4 h-4 text-destructive" />
-              <div>
-                <div className="text-sm font-medium">وظيفة حكومية</div>
-                <div className="text-[11px] text-muted-foreground">ستظهر بعلامة حمراء على الخريطة</div>
-              </div>
+          <div className="space-y-2">
+            <Label>نوع الوظيفة</Label>
+            <Select value={sector} onValueChange={(value) => setSector(value as typeof sector)}>
+              <SelectTrigger><SelectValue placeholder="اختر نوع الوظيفة" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="private">وظيفة قطاع خاص</SelectItem>
+                <SelectItem value="semi_government">وظيفة شبه حكومية</SelectItem>
+                <SelectItem value="government">وظيفة حكومية</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <Landmark className="w-3.5 h-3.5" />
+              الأزرق قطاع خاص، الأخضر شبه حكومي، الأحمر حكومي.
             </div>
-            <Switch checked={isGovernment} onCheckedChange={setIsGovernment} />
           </div>
         </div>
 
