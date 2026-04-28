@@ -84,7 +84,7 @@ const Auth = () => {
           <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center">
             <MapPin className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="font-bold">وظيفتي على الخريطة</span>
+          <span className="font-bold">وظيفة ماب</span>
         </Link>
       </div>
 
