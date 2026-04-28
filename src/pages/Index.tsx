@@ -305,8 +305,8 @@ const Index = () => {
         {company.logo_url && logoUrls[company.logo_url] ? (
           <img src={logoUrls[company.logo_url]} alt={`شعار ${company.company_name}`} className="w-10 h-10 rounded-md object-contain bg-background border border-border" />
         ) : (
-          <div className="w-10 h-10 rounded-md bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
-            <Building2 className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-md bg-card flex items-center justify-center flex-shrink-0 border border-border">
+            <Building2 className="w-5 h-5 text-foreground" />
           </div>
         )}
         <div className="min-w-0 flex-1">
@@ -337,7 +337,7 @@ const Index = () => {
       {(company.recruitment_email || company.recruitment_url) && (
         <div className="flex flex-col gap-1.5">
           {company.recruitment_url && (
-            <Button asChild size="sm" className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:opacity-90">
+            <Button asChild size="sm" className="w-full bg-gradient-primary hover:opacity-90">
               <a href={company.recruitment_url} target="_blank" rel="noreferrer">
                 <ExternalLink className="w-3 h-3 ml-1" />
                 صفحة التوظيف
