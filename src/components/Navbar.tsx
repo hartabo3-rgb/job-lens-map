@@ -1,4 +1,4 @@
-import { Briefcase, MapPin, Building2, Warehouse, ShieldCheck } from "lucide-react";
+import { Briefcase, MapPin, Building2, Warehouse, ShieldCheck, Megaphone, ExternalLink } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,9 +14,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 type NavbarProps = {
   onAddCompanyLocation?: () => void;
   onAddCommercialTower?: () => void;
+  announcements?: Array<{ id: string; title: string; body?: string | null; link_url?: string | null }>;
 };
 
-export const Navbar = ({ onAddCompanyLocation, onAddCommercialTower }: NavbarProps = {}) => {
+export const Navbar = ({ onAddCompanyLocation, onAddCommercialTower, announcements = [] }: NavbarProps = {}) => {
   const { user, profile, isAdmin, signOut } = useAuth();
   const location = useLocation();
 
@@ -27,22 +28,23 @@ export const Navbar = ({ onAddCompanyLocation, onAddCommercialTower }: NavbarPro
   return (
     <header className="absolute top-0 inset-x-0 z-[1000] pointer-events-none">
       <div className="container mx-auto px-4 py-4">
-        <nav className="bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-elegant px-4 py-3 flex items-center justify-between pointer-events-auto">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-soft">
-              <MapPin className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div className="hidden sm:block">
-              <div className="font-bold text-base text-foreground leading-tight">
-                وظيفة ماب
+        <nav className="bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-elegant px-4 py-3 pointer-events-auto">
+          <div className="flex items-center justify-between gap-3">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-soft">
+                <MapPin className="w-5 h-5 text-primary-foreground" />
               </div>
-              <div className="text-[11px] text-muted-foreground leading-tight">
-                منصة التوظيف الجغرافية
+              <div className="hidden sm:block">
+                <div className="font-bold text-base text-foreground leading-tight">
+                  وظيفة ماب
+                </div>
+                <div className="text-[11px] text-muted-foreground leading-tight">
+                  منصة التوظيف الجغرافية
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
 
-          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
             {user && profile ? (
               <>
                 {profile.role === "employer" && (
@@ -121,7 +123,22 @@ export const Navbar = ({ onAddCompanyLocation, onAddCommercialTower }: NavbarPro
                 </Link>
               </Button>
             )}
+            </div>
           </div>
+          {announcements.length > 0 && (
+            <div className="mt-3 grid gap-2 md:grid-cols-3">
+              {announcements.slice(0, 3).map((item) => (
+                <a key={item.id} href={item.link_url || undefined} target={item.link_url ? "_blank" : undefined} rel="noreferrer" className="group rounded-xl border border-border bg-background/70 px-3 py-2 text-right transition-smooth hover:bg-muted/80">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                    <Megaphone className="h-3.5 w-3.5 text-primary" />
+                    <span className="line-clamp-1 flex-1">{item.title}</span>
+                    {item.link_url && <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-primary" />}
+                  </div>
+                  {item.body && <div className="mt-1 line-clamp-1 text-[11px] text-muted-foreground">{item.body}</div>}
+                </a>
+              ))}
+            </div>
+          )}
         </nav>
       </div>
     </header>

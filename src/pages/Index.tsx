@@ -9,7 +9,6 @@ import {
   Landmark,
   LocateFixed,
   Mail,
-  Megaphone,
   MapPin,
   Phone,
   Search,
@@ -140,6 +139,7 @@ const Index = () => {
   const [logoUrls, setLogoUrls] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [postJobOpen, setPostJobOpen] = useState(false);
   const [addCompanyOpen, setAddCompanyOpen] = useState(false);
   const [addTowerOpen, setAddTowerOpen] = useState(false);
@@ -153,7 +153,9 @@ const Index = () => {
   const govIcon = useMemo(() => createMarkerIcon("gov_job"), []);
   const companyIcon = useMemo(() => createMarkerIcon("company"), []);
   const towerIcon = useMemo(() => createMarkerIcon("tower"), []);
+  const userIcon = useMemo(() => createMarkerIcon("user"), []);
   const mapRef = useRef<L.Map | null>(null);
+  const autoLocatedRef = useRef(false);
 
   const loadJobs = async () => {
     const { data, error } = await supabase
@@ -229,6 +231,24 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    if (autoLocatedRef.current || !navigator.geolocation) return;
+    autoLocatedRef.current = true;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        mapRef.current?.setView([latitude, longitude], 14);
+      },
+      () => undefined,
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (userLocation) mapRef.current?.setView([userLocation.lat, userLocation.lng], 14);
+  }, [userLocation]);
+
+  useEffect(() => {
     const logoPaths = [...companies, ...towerCompanies]
       .map((item) => item.logo_url)
       .filter((path): path is string => Boolean(path && !logoUrls[path]));
@@ -298,6 +318,32 @@ const Index = () => {
     towerCompanies
       .filter((company) => company.tower_id === towerId)
       .sort((a, b) => a.company_name.localeCompare(b.company_name, "ar"));
+
+  const navAnnouncements = useMemo(
+    () => [
+      ...announcements,
+      ...governmentAnnouncements.map((item) => ({
+        id: item.id,
+        title: item.title,
+        body: `${item.agency_name}${item.location_name ? ` · ${item.location_name}` : ""}`,
+        link_url: item.application_url,
+      })),
+    ],
+    [announcements, governmentAnnouncements]
+  );
+
+  const getDistanceKm = (lat: number, lng: number) => {
+    if (!userLocation) return null;
+    const radius = 6371;
+    const dLat = ((lat - userLocation.lat) * Math.PI) / 180;
+    const dLng = ((lng - userLocation.lng) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((userLocation.lat * Math.PI) / 180) *
+        Math.cos((lat * Math.PI) / 180) *
+        Math.sin(dLng / 2) ** 2;
+    return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
 
   const renderCompanyDetails = (company: CompanyLocation | TowerCompany, variant: "standalone" | "tower" = "standalone") => (
     <div className="space-y-2 rounded-md border border-border bg-muted/30 p-2">
@@ -429,6 +475,7 @@ const Index = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
         mapRef.current?.setView([latitude, longitude], 14);
         toast.success("تم الانتقال إلى موقعك الحالي");
       },
@@ -454,10 +501,11 @@ const Index = () => {
       <Navbar
         onAddCompanyLocation={startAddCompanyFlow}
         onAddCommercialTower={startAddTowerFlow}
+        announcements={navAnnouncements}
       />
 
       {/* Search bar */}
-      <div className="absolute top-24 inset-x-0 z-[999] pointer-events-none">
+      <div className="absolute top-24 inset-x-0 z-[999] pointer-events-none md:top-32">
         <div className="container mx-auto px-4">
           <div className="max-w-xl mx-auto pointer-events-auto">
             <div className="relative">
@@ -477,32 +525,6 @@ const Index = () => {
                 </Badge>
               )}
             </div>
-
-            {(announcements.length > 0 || governmentAnnouncements.length > 0) && (
-              <div className="mt-3 grid gap-2">
-                {[...announcements, ...governmentAnnouncements.map((item) => ({
-                  id: item.id,
-                  title: item.title,
-                  body: `${item.agency_name}${item.location_name ? ` · ${item.location_name}` : ""}`,
-                  link_url: item.application_url,
-                }))].slice(0, 3).map((item) => (
-                  <a
-                    key={item.id}
-                    href={item.link_url || undefined}
-                    target={item.link_url ? "_blank" : undefined}
-                    rel="noreferrer"
-                    className="block rounded-xl border border-border bg-card/95 px-4 py-2 text-right shadow-soft backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <Megaphone className="w-4 h-4 text-primary" />
-                      {item.title}
-                    </div>
-                    {item.body && <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{item.body}</div>}
-                  </a>
-                ))}
-              </div>
-            )}
-
             {/* Legend */}
             <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
               <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
@@ -582,8 +604,21 @@ const Index = () => {
 
         <MapClickHandler onMapClick={handleMapClick} />
 
+        {userLocation && (
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+            <Popup>
+              <div className="p-3 text-right font-sans" dir="rtl">
+                <div className="font-bold text-foreground">موقعك الحالي</div>
+                <div className="mt-1 text-xs text-muted-foreground">تم تحديده تلقائياً من GPS</div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
+
         {/* Job markers */}
-        {filteredJobs.map((job) => (
+        {filteredJobs.map((job) => {
+          const distanceKm = getDistanceKm(job.latitude, job.longitude);
+          return (
           <Marker
             key={`job-${job.id}`}
             position={[job.latitude, job.longitude]}
@@ -655,6 +690,12 @@ const Index = () => {
                       {job.required_experience}
                     </Badge>
                   )}
+                  {distanceKm !== null && (
+                    <Badge variant="secondary" className="text-[10px] gap-1">
+                      <MapPin className="w-3 h-3" />
+                      يبعد {distanceKm < 1 ? `${Math.round(distanceKm * 1000)} م` : `${distanceKm.toFixed(1)} كم`}
+                    </Badge>
+                  )}
                 </div>
 
                 <Button
@@ -679,7 +720,8 @@ const Index = () => {
               </div>
             </Popup>
           </Marker>
-        ))}
+          );
+        })}
 
         {/* Company location markers */}
         {filteredCompanies.map((c) => (

@@ -63,10 +63,10 @@ const AdminDashboard = () => {
     loadData();
   };
 
-  const verifyCompany = async (table: "company_locations" | "tower_companies", id: string) => {
-    const { error } = await supabase.from(table as any).update({ is_verified: true, verified_at: new Date().toISOString(), verified_by: user?.id }).eq("id", id);
-    if (error) return toast.error("تعذّر توثيق الشركة: " + error.message);
-    toast.success("تم توثيق الشركة");
+  const setCompanyVerification = async (table: "company_locations" | "tower_companies", id: string, isVerified: boolean) => {
+    const { error } = await supabase.from(table as any).update({ is_verified: isVerified, verified_at: isVerified ? new Date().toISOString() : null, verified_by: isVerified ? user?.id : null }).eq("id", id);
+    if (error) return toast.error(`${isVerified ? "تعذّر توثيق" : "تعذّر إلغاء توثيق"} الشركة: ${error.message}`);
+    toast.success(isVerified ? "تم توثيق الشركة" : "تم إلغاء توثيق الشركة");
     loadData();
   };
 
@@ -102,7 +102,7 @@ const AdminDashboard = () => {
           <Card className="p-4 shadow-soft"><h2 className="mb-3 flex items-center gap-2 font-bold"><Briefcase className="w-4 h-4 text-destructive" />إعلانات الوظائف الحكومية</h2><div className="space-y-3"><Label>المسمى</Label><Input value={govTitle} onChange={(e) => setGovTitle(e.target.value)} /><Label>الجهة</Label><Input value={govAgency} onChange={(e) => setGovAgency(e.target.value)} /><Label>رابط التقديم</Label><Input value={govUrl} onChange={(e) => setGovUrl(e.target.value)} /><Button onClick={addGovernmentAnnouncement} className="bg-gradient-primary">إضافة إعلان حكومي</Button></div></Card>
           <Card className="p-4 shadow-soft"><h2 className="mb-3 font-bold">إضافة مشرفين</h2><div className="space-y-2 max-h-80 overflow-auto">{profiles.map((p) => <div key={p.id} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><div><div className="text-sm font-medium">{p.full_name || p.email}</div><div className="text-xs text-muted-foreground">{p.email}</div></div><Button size="sm" variant="outline" onClick={() => addModerator(p.id)}>مشرف</Button></div>)}</div></Card>
           <Card className="p-4 shadow-soft"><h2 className="mb-3 font-bold">حذف الوظائف الكاذبة</h2><div className="space-y-2 max-h-80 overflow-auto">{jobs.map((job) => <div key={job.id} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><div><div className="text-sm font-medium">{job.title}</div><div className="text-xs text-muted-foreground">{job.location_name}</div></div><Button size="sm" variant="destructive" onClick={() => closeJob(job.id)}><Trash2 className="w-4 h-4" /></Button></div>)}</div></Card>
-          <Card className="p-4 shadow-soft lg:col-span-2"><h2 className="mb-3 flex items-center gap-2 font-bold"><Building2 className="w-4 h-4 text-primary" />توثيق حسابات الشركات</h2><div className="grid gap-2 md:grid-cols-2">{[...companies.map((c) => ({ ...c, table: "company_locations" as const })), ...towerCompanies.map((c) => ({ ...c, table: "tower_companies" as const }))].map((c) => <div key={`${c.table}-${c.id}`} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><div><div className="text-sm font-medium">{c.company_name}</div><div className="text-xs text-muted-foreground">{c.location_name || "داخل برج تجاري"}</div></div>{c.is_verified ? <Badge className="gap-1 bg-primary/10 text-primary"><CheckCircle2 className="w-3 h-3" />موثق</Badge> : <Button size="sm" onClick={() => verifyCompany(c.table, c.id)}>توثيق</Button>}</div>)}</div></Card>
+          <Card className="p-4 shadow-soft lg:col-span-2"><h2 className="mb-3 flex items-center gap-2 font-bold"><Building2 className="w-4 h-4 text-primary" />توثيق حسابات الشركات</h2><div className="grid gap-2 md:grid-cols-2">{[...companies.map((c) => ({ ...c, table: "company_locations" as const })), ...towerCompanies.map((c) => ({ ...c, table: "tower_companies" as const }))].map((c) => <div key={`${c.table}-${c.id}`} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><div><div className="text-sm font-medium">{c.company_name}</div><div className="text-xs text-muted-foreground">{c.location_name || "داخل برج تجاري"}</div></div>{c.is_verified ? <div className="flex items-center gap-2"><Badge className="gap-1 bg-primary/10 text-primary"><CheckCircle2 className="w-3 h-3" />موثق</Badge><Button size="sm" variant="outline" onClick={() => setCompanyVerification(c.table, c.id, false)}>إلغاء التوثيق</Button></div> : <Button size="sm" onClick={() => setCompanyVerification(c.table, c.id, true)}>توثيق</Button>}</div>)}</div></Card>
         </div>
       </main>
     </div>

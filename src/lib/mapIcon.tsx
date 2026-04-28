@@ -1,8 +1,8 @@
 import L from "leaflet";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Briefcase, Building2, Landmark, Warehouse } from "lucide-react";
+import { Briefcase, Building2, Landmark, MapPin, Warehouse } from "lucide-react";
 
-export type MarkerKind = "job" | "semi_gov_job" | "gov_job" | "company" | "tower";
+export type MarkerKind = "job" | "semi_gov_job" | "gov_job" | "company" | "tower" | "user";
 
 const COLORS: Record<MarkerKind, { bg: string; ring: string }> = {
   // Blue – private sector jobs
@@ -15,11 +15,12 @@ const COLORS: Record<MarkerKind, { bg: string; ring: string }> = {
   company: { bg: "linear-gradient(135deg,#ffffff,#f8fafc)", ring: "#64748b" },
   // Yellow – commercial towers
   tower: { bg: "linear-gradient(135deg,#d97706,#facc15)", ring: "#92400e" },
+  user: { bg: "linear-gradient(135deg,#0f172a,#334155)", ring: "#0f172a" },
 };
 
 export function createMarkerIcon(kind: MarkerKind = "job") {
   const Icon =
-    kind === "tower" ? Warehouse : kind === "company" ? Building2 : kind === "gov_job" || kind === "semi_gov_job" ? Landmark : Briefcase;
+    kind === "tower" ? Warehouse : kind === "company" ? Building2 : kind === "user" ? MapPin : kind === "gov_job" || kind === "semi_gov_job" ? Landmark : Briefcase;
   const iconSvg = renderToStaticMarkup(<Icon size={16} strokeWidth={2.5} />);
   const { bg, ring } = COLORS[kind];
 
