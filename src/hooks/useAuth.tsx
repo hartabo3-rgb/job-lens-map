@@ -22,6 +22,7 @@ type AuthContextValue = {
   session: Session | null;
   profile: Profile | null;
   isAdmin: boolean;
+  isModerator: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -34,6 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
@@ -47,10 +49,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .from("user_roles" as any)
         .select("role")
         .eq("user_id", userId)
-        .eq("role", "admin")
+        .in("role", ["admin", "moderator"])
     ]);
-    setProfile((data as Profile) ?? null);
-    setIsAdmin(((roles as unknown as { role: string }[] | null) ?? []).some((item) => item.role === "admin"));
+    const nextProfile = (data as Profile) ?? null;
+    const pendingRole = localStorage.getItem("pending_auth_role") as "job_seeker" | "employer" | null;
+    if (pendingRole && nextProfile && nextProfile.role !== pendingRole) {
+      const { error } = await supabase.from("profiles").update({ role: pendingRole }).eq("id", userId);
+      if (!error) nextProfile.role = pendingRole;
+      localStorage.removeItem("pending_auth_role");
+    }
+    setProfile(nextProfile);
+    const roleList = ((roles as unknown as { role: string }[] | null) ?? []).map((item) => item.role);
+    setIsAdmin(roleList.includes("admin"));
+    setIsModerator(roleList.includes("moderator"));
   };
 
   useEffect(() => {
@@ -63,6 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setProfile(null);
           setIsAdmin(false);
+          setIsModerator(false);
         }
       }
     );
@@ -84,6 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
     setProfile(null);
     setIsAdmin(false);
+    setIsModerator(false);
   };
 
   const refreshProfile = async () => {
@@ -91,7 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, isAdmin, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, isAdmin, isModerator, loading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
