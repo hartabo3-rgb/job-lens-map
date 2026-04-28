@@ -694,8 +694,8 @@ const Index = () => {
                   {c.logo_url && logoUrls[c.logo_url] ? (
                     <img src={logoUrls[c.logo_url]} alt={`شعار ${c.company_name}`} className="w-8 h-8 rounded-lg object-contain bg-background border border-border flex-shrink-0" />
                   ) : (
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                      <Building2 className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center flex-shrink-0">
+                      <Building2 className="w-4 h-4 text-foreground" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
@@ -703,7 +703,7 @@ const Index = () => {
                       {c.company_name}
                       {c.is_verified && <CheckCircle2 className="mr-1 inline h-4 w-4 text-primary" />}
                     </h3>
-                    <p className="text-xs text-emerald-700 m-0 mt-0.5">موقع شركة</p>
+                    <p className="text-xs text-muted-foreground m-0 mt-0.5">موقع شركة</p>
                   </div>
                 </div>
 
