@@ -231,6 +231,20 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    if (autoLocatedRef.current || !navigator.geolocation) return;
+    autoLocatedRef.current = true;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        mapRef.current?.setView([latitude, longitude], 14);
+      },
+      () => undefined,
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, []);
+
+  useEffect(() => {
     const logoPaths = [...companies, ...towerCompanies]
       .map((item) => item.logo_url)
       .filter((path): path is string => Boolean(path && !logoUrls[path]));
@@ -457,6 +471,7 @@ const Index = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
         mapRef.current?.setView([latitude, longitude], 14);
         toast.success("تم الانتقال إلى موقعك الحالي");
       },
