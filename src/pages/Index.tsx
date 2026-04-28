@@ -7,13 +7,16 @@ import {
   Clock,
   GraduationCap,
   Landmark,
+  LocateFixed,
   Mail,
+  Megaphone,
   MapPin,
   Phone,
   Search,
   Users,
   Warehouse,
   ExternalLink,
+  CheckCircle2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -46,6 +49,7 @@ type Job = {
   max_applicants: number | null;
   expires_at: string | null;
   is_government: boolean;
+  sector: "private" | "semi_government" | "government";
   required_education: string | null;
   required_field: string | null;
   required_experience: string | null;
@@ -67,6 +71,7 @@ type CompanyLocation = {
   recruitment_email: string | null;
   recruitment_url: string | null;
   logo_url: string | null;
+  is_verified?: boolean;
 };
 
 type CommercialTower = {
@@ -91,6 +96,23 @@ type TowerCompany = {
   contact_phone: string | null;
   recruitment_email: string | null;
   recruitment_url: string | null;
+  is_verified?: boolean;
+};
+
+type SiteAnnouncement = {
+  id: string;
+  title: string;
+  body: string | null;
+  link_url: string | null;
+};
+
+type GovernmentAnnouncement = {
+  id: string;
+  title: string;
+  agency_name: string;
+  description: string | null;
+  location_name: string | null;
+  application_url: string | null;
 };
 
 type ClickMode = "none" | "post_job" | "add_company" | "add_tower";
