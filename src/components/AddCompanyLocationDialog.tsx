@@ -63,7 +63,7 @@ export const AddCompanyLocationDialog = ({
   const handleSubmit = async () => {
     if (!user || !location) return;
     if (!companyName.trim() || !locationName.trim()) {
-      toast.error("اسم الشركة واسم الموقع مطلوبان");
+      toast.error("اسم الشركة والعنوان على الخريطة مطلوبان");
       return;
     }
     setSubmitting(true);
@@ -147,7 +147,7 @@ export const AddCompanyLocationDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label>اسم الموقع *</Label>
+            <Label>الانتقال الى العنوان على الخريطه *</Label>
             <Input
               value={locationName}
               onChange={(e) => setLocationName(e.target.value)}
