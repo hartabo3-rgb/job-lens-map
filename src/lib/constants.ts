@@ -25,7 +25,7 @@ export const JOB_DURATION_OPTIONS = [
   { label: "24 ساعة", value: "24" },
   { label: "48 ساعة", value: "48" },
   { label: "72 ساعة", value: "72" },
-  { label: "إلى اكتمال العدد", value: "until_full" },
+  { label: "إلى اكتمال عدد المتقدمين", value: "until_full" },
 ] as const;
 
 export const APPLICANT_LIMIT_OPTIONS = Array.from({ length: 10 }, (_, i) =>

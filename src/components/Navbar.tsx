@@ -1,4 +1,4 @@
-import { Briefcase, MapPin, Building2, Warehouse } from "lucide-react";
+import { Briefcase, MapPin, Building2, Warehouse, ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,7 +34,7 @@ export const Navbar = ({ onAddCompanyLocation, onAddCommercialTower }: NavbarPro
             </div>
             <div className="hidden sm:block">
               <div className="font-bold text-base text-foreground leading-tight">
-                وظيفتي على الخريطة
+                وظيفة ماب
               </div>
               <div className="text-[11px] text-muted-foreground leading-tight">
                 منصة التوظيف الجغرافية
@@ -70,6 +70,14 @@ export const Navbar = ({ onAddCompanyLocation, onAddCommercialTower }: NavbarPro
                     <div className="px-2 py-1.5 text-xs text-muted-foreground border-b mb-1">
                       {profile.email}
                     </div>
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin">
+                          <ShieldCheck className="w-4 h-4 ml-2 text-primary" />
+                          لوحة الإدارة
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     {profile.role === "job_seeker" ? (
                       <DropdownMenuItem asChild>
                         <Link to="/profile">تعديل الملف الشخصي</Link>

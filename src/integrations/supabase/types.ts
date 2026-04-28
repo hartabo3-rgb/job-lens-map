@@ -101,6 +101,7 @@ export type Database = {
           description: string | null
           employer_id: string
           id: string
+          is_verified: boolean
           latitude: number
           location_name: string
           logo_url: string | null
@@ -108,6 +109,8 @@ export type Database = {
           recruitment_email: string | null
           recruitment_url: string | null
           updated_at: string
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           company_name: string
@@ -117,6 +120,7 @@ export type Database = {
           description?: string | null
           employer_id: string
           id?: string
+          is_verified?: boolean
           latitude: number
           location_name: string
           logo_url?: string | null
@@ -124,6 +128,8 @@ export type Database = {
           recruitment_email?: string | null
           recruitment_url?: string | null
           updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           company_name?: string
@@ -133,12 +139,60 @@ export type Database = {
           description?: string | null
           employer_id?: string
           id?: string
+          is_verified?: boolean
           latitude?: number
           location_name?: string
           logo_url?: string | null
           longitude?: number
           recruitment_email?: string | null
           recruitment_url?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
+      government_job_announcements: {
+        Row: {
+          agency_name: string
+          application_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          location_name: string | null
+          logo_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agency_name: string
+          application_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          location_name?: string | null
+          logo_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agency_name?: string
+          application_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          location_name?: string | null
+          logo_url?: string | null
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -166,6 +220,7 @@ export type Database = {
           required_field: string | null
           required_languages: string[] | null
           required_skills: string[] | null
+          sector: Database["public"]["Enums"]["job_sector"]
           status: Database["public"]["Enums"]["job_status"]
           title: string
         }
@@ -191,6 +246,7 @@ export type Database = {
           required_field?: string | null
           required_languages?: string[] | null
           required_skills?: string[] | null
+          sector?: Database["public"]["Enums"]["job_sector"]
           status?: Database["public"]["Enums"]["job_status"]
           title: string
         }
@@ -216,6 +272,7 @@ export type Database = {
           required_field?: string | null
           required_languages?: string[] | null
           required_skills?: string[] | null
+          sector?: Database["public"]["Enums"]["job_sector"]
           status?: Database["public"]["Enums"]["job_status"]
           title?: string
         }
@@ -286,6 +343,54 @@ export type Database = {
         }
         Relationships: []
       }
+      site_announcements: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          display_order: number
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          job_id: string | null
+          kind: Database["public"]["Enums"]["announcement_kind"]
+          link_url: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          display_order?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          job_id?: string | null
+          kind?: Database["public"]["Enums"]["announcement_kind"]
+          link_url?: string | null
+          starts_at?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          display_order?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          job_id?: string | null
+          kind?: Database["public"]["Enums"]["announcement_kind"]
+          link_url?: string | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tower_companies: {
         Row: {
           company_name: string
@@ -295,11 +400,14 @@ export type Database = {
           description: string | null
           employer_id: string
           id: string
+          is_verified: boolean
           logo_url: string | null
           recruitment_email: string | null
           recruitment_url: string | null
           tower_id: string
           updated_at: string
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           company_name: string
@@ -309,11 +417,14 @@ export type Database = {
           description?: string | null
           employer_id: string
           id?: string
+          is_verified?: boolean
           logo_url?: string | null
           recruitment_email?: string | null
           recruitment_url?: string | null
           tower_id: string
           updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           company_name?: string
@@ -323,11 +434,14 @@ export type Database = {
           description?: string | null
           employer_id?: string
           id?: string
+          is_verified?: boolean
           logo_url?: string | null
           recruitment_email?: string | null
           recruitment_url?: string | null
           tower_id?: string
           updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
           {
@@ -371,6 +485,7 @@ export type Database = {
       }
     }
     Enums: {
+      announcement_kind: "featured_job" | "site_notice"
       app_role: "admin" | "moderator" | "user"
       education_level: "ثانوية" | "دبلوم" | "بكالوريوس" | "ماجستير" | "دكتوراه"
       experience_range:
@@ -379,6 +494,7 @@ export type Database = {
         | "3-5 سنوات"
         | "5-10 سنوات"
         | "أكثر من 10 سنوات"
+      job_sector: "private" | "semi_government" | "government"
       job_status: "active" | "closed"
       user_role: "job_seeker" | "employer"
     }
@@ -508,6 +624,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      announcement_kind: ["featured_job", "site_notice"],
       app_role: ["admin", "moderator", "user"],
       education_level: ["ثانوية", "دبلوم", "بكالوريوس", "ماجستير", "دكتوراه"],
       experience_range: [
@@ -517,6 +634,7 @@ export const Constants = {
         "5-10 سنوات",
         "أكثر من 10 سنوات",
       ],
+      job_sector: ["private", "semi_government", "government"],
       job_status: ["active", "closed"],
       user_role: ["job_seeker", "employer"],
     },

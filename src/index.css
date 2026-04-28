@@ -15,9 +15,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 40% 12%;
 
-    --primary: 215 70% 22%;
+    --primary: 217 85% 42%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 215 75% 35%;
+    --primary-glow: 188 78% 43%;
 
     --secondary: 210 30% 94%;
     --secondary-foreground: 215 40% 18%;
@@ -25,7 +25,7 @@
     --muted: 210 25% 95%;
     --muted-foreground: 215 15% 45%;
 
-    --accent: 200 85% 45%;
+    --accent: 172 76% 38%;
     --accent-foreground: 0 0% 100%;
 
     --success: 145 60% 38%;
@@ -43,9 +43,9 @@
 
     --radius: 0.75rem;
 
-    --gradient-primary: linear-gradient(135deg, hsl(215 70% 22%), hsl(215 75% 35%));
-    --gradient-hero: linear-gradient(135deg, hsl(215 70% 22%) 0%, hsl(200 85% 45%) 100%);
-    --shadow-elegant: 0 10px 30px -10px hsl(215 70% 22% / 0.25);
+    --gradient-primary: linear-gradient(135deg, hsl(217 85% 42%), hsl(188 78% 43%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 85% 42%) 0%, hsl(172 76% 38%) 100%);
+    --shadow-elegant: 0 10px 30px -10px hsl(217 85% 42% / 0.22);
     --shadow-soft: 0 2px 12px -2px hsl(215 30% 30% / 0.08);
     --shadow-marker: 0 4px 14px -2px hsl(215 70% 22% / 0.45);
 
@@ -161,6 +161,10 @@
     color: #ffffff;
     font-size: 16px;
     display: inline-flex;
+  }
+
+  .map-marker-inner-dark {
+    color: hsl(var(--foreground));
   }
 
   /* Dim non-Saudi countries via the world overlay */

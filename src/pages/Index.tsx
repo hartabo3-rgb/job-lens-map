@@ -7,13 +7,16 @@ import {
   Clock,
   GraduationCap,
   Landmark,
+  LocateFixed,
   Mail,
+  Megaphone,
   MapPin,
   Phone,
   Search,
   Users,
   Warehouse,
   ExternalLink,
+  CheckCircle2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -46,6 +49,7 @@ type Job = {
   max_applicants: number | null;
   expires_at: string | null;
   is_government: boolean;
+  sector: "private" | "semi_government" | "government";
   required_education: string | null;
   required_field: string | null;
   required_experience: string | null;
@@ -67,6 +71,7 @@ type CompanyLocation = {
   recruitment_email: string | null;
   recruitment_url: string | null;
   logo_url: string | null;
+  is_verified?: boolean;
 };
 
 type CommercialTower = {
@@ -91,6 +96,23 @@ type TowerCompany = {
   contact_phone: string | null;
   recruitment_email: string | null;
   recruitment_url: string | null;
+  is_verified?: boolean;
+};
+
+type SiteAnnouncement = {
+  id: string;
+  title: string;
+  body: string | null;
+  link_url: string | null;
+};
+
+type GovernmentAnnouncement = {
+  id: string;
+  title: string;
+  agency_name: string;
+  description: string | null;
+  location_name: string | null;
+  application_url: string | null;
 };
 
 type ClickMode = "none" | "post_job" | "add_company" | "add_tower";
@@ -113,6 +135,8 @@ const Index = () => {
   const [companies, setCompanies] = useState<CompanyLocation[]>([]);
   const [towers, setTowers] = useState<CommercialTower[]>([]);
   const [towerCompanies, setTowerCompanies] = useState<TowerCompany[]>([]);
+  const [announcements, setAnnouncements] = useState<SiteAnnouncement[]>([]);
+  const [governmentAnnouncements, setGovernmentAnnouncements] = useState<GovernmentAnnouncement[]>([]);
   const [logoUrls, setLogoUrls] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -125,6 +149,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, profile, isAdmin } = useAuth();
   const jobIcon = useMemo(() => createMarkerIcon("job"), []);
+  const semiGovIcon = useMemo(() => createMarkerIcon("semi_gov_job"), []);
   const govIcon = useMemo(() => createMarkerIcon("gov_job"), []);
   const companyIcon = useMemo(() => createMarkerIcon("company"), []);
   const towerIcon = useMemo(() => createMarkerIcon("tower"), []);
@@ -135,7 +160,7 @@ const Index = () => {
       .from("jobs")
       .select(`
         id, employer_id, title, description, latitude, longitude, location_name, application_url,
-        duration_hours, max_applicants, expires_at, is_government,
+        duration_hours, max_applicants, expires_at, is_government, sector,
         required_education, required_field, required_experience, required_skills, required_languages,
         employer:profiles!jobs_employer_id_fkey ( full_name, company_name )
       `)
@@ -186,11 +211,21 @@ const Index = () => {
     setTowerCompanies((data as unknown as TowerCompany[]) ?? []);
   };
 
+  const loadAnnouncements = async () => {
+    const [{ data: siteData }, { data: governmentData }] = await Promise.all([
+      supabase.from("site_announcements" as any).select("id, title, body, link_url").order("display_order", { ascending: true }).limit(5),
+      supabase.from("government_job_announcements" as any).select("id, title, agency_name, description, location_name, application_url").order("display_order", { ascending: true }).limit(5),
+    ]);
+    setAnnouncements((siteData as unknown as SiteAnnouncement[]) ?? []);
+    setGovernmentAnnouncements((governmentData as unknown as GovernmentAnnouncement[]) ?? []);
+  };
+
   useEffect(() => {
     loadJobs();
     loadCompanies();
     loadTowers();
     loadTowerCompanies();
+    loadAnnouncements();
   }, []);
 
   useEffect(() => {
@@ -270,8 +305,8 @@ const Index = () => {
         {company.logo_url && logoUrls[company.logo_url] ? (
           <img src={logoUrls[company.logo_url]} alt={`شعار ${company.company_name}`} className="w-10 h-10 rounded-md object-contain bg-background border border-border" />
         ) : (
-          <div className="w-10 h-10 rounded-md bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
-            <Building2 className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-md bg-card flex items-center justify-center flex-shrink-0 border border-border">
+            <Building2 className="w-5 h-5 text-foreground" />
           </div>
         )}
         <div className="min-w-0 flex-1">
@@ -302,7 +337,7 @@ const Index = () => {
       {(company.recruitment_email || company.recruitment_url) && (
         <div className="flex flex-col gap-1.5">
           {company.recruitment_url && (
-            <Button asChild size="sm" className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:opacity-90">
+            <Button asChild size="sm" className="w-full bg-gradient-primary hover:opacity-90">
               <a href={company.recruitment_url} target="_blank" rel="noreferrer">
                 <ExternalLink className="w-3 h-3 ml-1" />
                 صفحة التوظيف
@@ -386,6 +421,34 @@ const Index = () => {
     toast.info("اضغط على الخريطة داخل السعودية لتحديد موقع البرج التجاري");
   };
 
+  const locateMe = () => {
+    if (!navigator.geolocation) {
+      toast.error("تحديد الموقع غير مدعوم في هذا المتصفح");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        mapRef.current?.setView([latitude, longitude], 14);
+        toast.success("تم الانتقال إلى موقعك الحالي");
+      },
+      () => toast.error("تعذّر تحديد موقعك، تأكد من تفعيل GPS ومنح الإذن"),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const getJobIcon = (job: Job) => {
+    if (job.sector === "government" || job.is_government) return govIcon;
+    if (job.sector === "semi_government") return semiGovIcon;
+    return jobIcon;
+  };
+
+  const getJobLabel = (job: Job) => {
+    if (job.sector === "government" || job.is_government) return "وظيفة حكومية";
+    if (job.sector === "semi_government") return "وظيفة شبه حكومية";
+    return "وظيفة قطاع خاص";
+  };
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       <Navbar
@@ -415,18 +478,47 @@ const Index = () => {
               )}
             </div>
 
+            {(announcements.length > 0 || governmentAnnouncements.length > 0) && (
+              <div className="mt-3 grid gap-2">
+                {[...announcements, ...governmentAnnouncements.map((item) => ({
+                  id: item.id,
+                  title: item.title,
+                  body: `${item.agency_name}${item.location_name ? ` · ${item.location_name}` : ""}`,
+                  link_url: item.application_url,
+                }))].slice(0, 3).map((item) => (
+                  <a
+                    key={item.id}
+                    href={item.link_url || undefined}
+                    target={item.link_url ? "_blank" : undefined}
+                    rel="noreferrer"
+                    className="block rounded-xl border border-border bg-card/95 px-4 py-2 text-right shadow-soft backdrop-blur-md"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <Megaphone className="w-4 h-4 text-primary" />
+                      {item.title}
+                    </div>
+                    {item.body && <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{item.body}</div>}
+                  </a>
+                ))}
+              </div>
+            )}
+
             {/* Legend */}
             <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
               <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                وظيفة
+                وظيفة قطاع خاص
+              </Badge>
+              <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
+                <span className="w-2.5 h-2.5 rounded-full bg-success" />
+                وظيفة شبه حكومية
               </Badge>
               <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-600" />
                 وظيفة حكومية
               </Badge>
               <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
+                <span className="w-2.5 h-2.5 rounded-full bg-card border border-border" />
                 موقع شركة
               </Badge>
               <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
@@ -436,6 +528,12 @@ const Index = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="absolute left-4 bottom-24 z-[999] pointer-events-auto">
+        <Button onClick={locateMe} size="icon" variant="secondary" className="h-11 w-11 rounded-full bg-card/95 shadow-elegant backdrop-blur-md">
+          <LocateFixed className="w-5 h-5" />
+        </Button>
       </div>
 
       {/* Hint for employers */}
@@ -489,19 +587,21 @@ const Index = () => {
           <Marker
             key={`job-${job.id}`}
             position={[job.latitude, job.longitude]}
-            icon={job.is_government ? govIcon : jobIcon}
+            icon={getJobIcon(job)}
           >
             <Popup>
               <div className="p-4 font-sans" dir="rtl">
                 <div className="flex items-start gap-2 mb-2">
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      job.is_government
+                      job.sector === "government" || job.is_government
                         ? "bg-gradient-to-br from-red-600 to-red-500"
+                        : job.sector === "semi_government"
+                          ? "bg-gradient-to-br from-emerald-700 to-emerald-500"
                         : "bg-gradient-primary"
                     }`}
                   >
-                    {job.is_government ? (
+                    {job.sector === "government" || job.is_government || job.sector === "semi_government" ? (
                       <Landmark className="w-4 h-4 text-white" />
                     ) : (
                       <Briefcase className="w-4 h-4 text-primary-foreground" />
@@ -512,11 +612,9 @@ const Index = () => {
                       <h3 className="font-bold text-base text-foreground leading-tight m-0">
                         {job.title}
                       </h3>
-                      {job.is_government && (
-                        <Badge className="bg-red-600/10 text-red-700 border-0 text-[10px] px-1.5 py-0">
-                          حكومية
+                      <Badge className="bg-muted text-foreground border-0 text-[10px] px-1.5 py-0">
+                        {getJobLabel(job)}
                         </Badge>
-                      )}
                     </div>
                     <p className="text-xs text-muted-foreground m-0">
                       {job.employer?.company_name || job.employer?.full_name || "صاحب عمل"}
@@ -571,6 +669,8 @@ const Index = () => {
                   className={`w-full ${
                     job.is_government
                       ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90"
+                      : job.sector === "semi_government"
+                        ? "bg-gradient-to-r from-emerald-700 to-emerald-500 hover:opacity-90"
                       : "bg-gradient-primary hover:opacity-90"
                   }`}
                 >
@@ -594,15 +694,16 @@ const Index = () => {
                   {c.logo_url && logoUrls[c.logo_url] ? (
                     <img src={logoUrls[c.logo_url]} alt={`شعار ${c.company_name}`} className="w-8 h-8 rounded-lg object-contain bg-background border border-border flex-shrink-0" />
                   ) : (
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                      <Building2 className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center flex-shrink-0">
+                      <Building2 className="w-4 h-4 text-foreground" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-base text-foreground leading-tight m-0">
                       {c.company_name}
+                      {c.is_verified && <CheckCircle2 className="mr-1 inline h-4 w-4 text-primary" />}
                     </h3>
-                    <p className="text-xs text-emerald-700 m-0 mt-0.5">موقع شركة</p>
+                    <p className="text-xs text-muted-foreground m-0 mt-0.5">موقع شركة</p>
                   </div>
                 </div>
 

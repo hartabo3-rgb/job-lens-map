@@ -53,7 +53,7 @@ export const AddCommercialTowerDialog = ({
       return;
     }
     if (!towerName.trim() || !locationName.trim()) {
-      toast.error("اسم البرج واسم الموقع مطلوبان");
+      toast.error("اسم البرج والعنوان على الخريطة مطلوبان");
       return;
     }
 
@@ -103,7 +103,7 @@ export const AddCommercialTowerDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label>اسم الموقع *</Label>
+            <Label>الانتقال الى العنوان على الخريطه *</Label>
             <Input
               value={locationName}
               onChange={(e) => setLocationName(e.target.value)}
