@@ -701,6 +701,7 @@ const Index = () => {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-base text-foreground leading-tight m-0">
                       {c.company_name}
+                      {c.is_verified && <CheckCircle2 className="mr-1 inline h-4 w-4 text-primary" />}
                     </h3>
                     <p className="text-xs text-emerald-700 m-0 mt-0.5">موقع شركة</p>
                   </div>
