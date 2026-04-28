@@ -135,6 +135,8 @@ const Index = () => {
   const [companies, setCompanies] = useState<CompanyLocation[]>([]);
   const [towers, setTowers] = useState<CommercialTower[]>([]);
   const [towerCompanies, setTowerCompanies] = useState<TowerCompany[]>([]);
+  const [announcements, setAnnouncements] = useState<SiteAnnouncement[]>([]);
+  const [governmentAnnouncements, setGovernmentAnnouncements] = useState<GovernmentAnnouncement[]>([]);
   const [logoUrls, setLogoUrls] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -147,6 +149,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, profile, isAdmin } = useAuth();
   const jobIcon = useMemo(() => createMarkerIcon("job"), []);
+  const semiGovIcon = useMemo(() => createMarkerIcon("semi_gov_job"), []);
   const govIcon = useMemo(() => createMarkerIcon("gov_job"), []);
   const companyIcon = useMemo(() => createMarkerIcon("company"), []);
   const towerIcon = useMemo(() => createMarkerIcon("tower"), []);
@@ -157,7 +160,7 @@ const Index = () => {
       .from("jobs")
       .select(`
         id, employer_id, title, description, latitude, longitude, location_name, application_url,
-        duration_hours, max_applicants, expires_at, is_government,
+        duration_hours, max_applicants, expires_at, is_government, sector,
         required_education, required_field, required_experience, required_skills, required_languages,
         employer:profiles!jobs_employer_id_fkey ( full_name, company_name )
       `)
@@ -208,11 +211,21 @@ const Index = () => {
     setTowerCompanies((data as unknown as TowerCompany[]) ?? []);
   };
 
+  const loadAnnouncements = async () => {
+    const [{ data: siteData }, { data: governmentData }] = await Promise.all([
+      supabase.from("site_announcements" as any).select("id, title, body, link_url").order("display_order", { ascending: true }).limit(5),
+      supabase.from("government_job_announcements" as any).select("id, title, agency_name, description, location_name, application_url").order("display_order", { ascending: true }).limit(5),
+    ]);
+    setAnnouncements((siteData as unknown as SiteAnnouncement[]) ?? []);
+    setGovernmentAnnouncements((governmentData as unknown as GovernmentAnnouncement[]) ?? []);
+  };
+
   useEffect(() => {
     loadJobs();
     loadCompanies();
     loadTowers();
     loadTowerCompanies();
+    loadAnnouncements();
   }, []);
 
   useEffect(() => {
