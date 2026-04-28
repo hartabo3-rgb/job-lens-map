@@ -501,7 +501,7 @@ const Index = () => {
       />
 
       {/* Search bar */}
-      <div className="absolute top-24 inset-x-0 z-[999] pointer-events-none">
+      <div className="absolute top-24 inset-x-0 z-[999] pointer-events-none md:top-32">
         <div className="container mx-auto px-4">
           <div className="max-w-xl mx-auto pointer-events-auto">
             <div className="relative">
@@ -600,8 +600,21 @@ const Index = () => {
 
         <MapClickHandler onMapClick={handleMapClick} />
 
+        {userLocation && (
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+            <Popup>
+              <div className="p-3 text-right font-sans" dir="rtl">
+                <div className="font-bold text-foreground">موقعك الحالي</div>
+                <div className="mt-1 text-xs text-muted-foreground">تم تحديده تلقائياً من GPS</div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
+
         {/* Job markers */}
-        {filteredJobs.map((job) => (
+        {filteredJobs.map((job) => {
+          const distanceKm = getDistanceKm(job.latitude, job.longitude);
+          return (
           <Marker
             key={`job-${job.id}`}
             position={[job.latitude, job.longitude]}
@@ -673,6 +686,12 @@ const Index = () => {
                       {job.required_experience}
                     </Badge>
                   )}
+                  {distanceKm !== null && (
+                    <Badge variant="secondary" className="text-[10px] gap-1">
+                      <MapPin className="w-3 h-3" />
+                      يبعد {distanceKm < 1 ? `${Math.round(distanceKm * 1000)} م` : `${distanceKm.toFixed(1)} كم`}
+                    </Badge>
+                  )}
                 </div>
 
                 <Button
@@ -697,7 +716,8 @@ const Index = () => {
               </div>
             </Popup>
           </Marker>
-        ))}
+          );
+        })}
 
         {/* Company location markers */}
         {filteredCompanies.map((c) => (
