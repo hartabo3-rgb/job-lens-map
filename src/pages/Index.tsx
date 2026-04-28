@@ -245,6 +245,10 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    if (userLocation) mapRef.current?.setView([userLocation.lat, userLocation.lng], 14);
+  }, [userLocation]);
+
+  useEffect(() => {
     const logoPaths = [...companies, ...towerCompanies]
       .map((item) => item.logo_url)
       .filter((path): path is string => Boolean(path && !logoUrls[path]));
