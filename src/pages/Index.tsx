@@ -478,18 +478,47 @@ const Index = () => {
               )}
             </div>
 
+            {(announcements.length > 0 || governmentAnnouncements.length > 0) && (
+              <div className="mt-3 grid gap-2">
+                {[...announcements, ...governmentAnnouncements.map((item) => ({
+                  id: item.id,
+                  title: item.title,
+                  body: `${item.agency_name}${item.location_name ? ` · ${item.location_name}` : ""}`,
+                  link_url: item.application_url,
+                }))].slice(0, 3).map((item) => (
+                  <a
+                    key={item.id}
+                    href={item.link_url || undefined}
+                    target={item.link_url ? "_blank" : undefined}
+                    rel="noreferrer"
+                    className="block rounded-xl border border-border bg-card/95 px-4 py-2 text-right shadow-soft backdrop-blur-md"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <Megaphone className="w-4 h-4 text-primary" />
+                      {item.title}
+                    </div>
+                    {item.body && <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{item.body}</div>}
+                  </a>
+                ))}
+              </div>
+            )}
+
             {/* Legend */}
             <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
               <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                وظيفة
+                وظيفة قطاع خاص
+              </Badge>
+              <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
+                <span className="w-2.5 h-2.5 rounded-full bg-success" />
+                وظيفة شبه حكومية
               </Badge>
               <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-600" />
                 وظيفة حكومية
               </Badge>
               <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
+                <span className="w-2.5 h-2.5 rounded-full bg-card border border-border" />
                 موقع شركة
               </Badge>
               <Badge className="bg-card/95 backdrop-blur-md text-foreground border border-border gap-1.5 hover:bg-card">
@@ -499,6 +528,12 @@ const Index = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="absolute left-4 bottom-24 z-[999] pointer-events-auto">
+        <Button onClick={locateMe} size="icon" variant="secondary" className="h-11 w-11 rounded-full bg-card/95 shadow-elegant backdrop-blur-md">
+          <LocateFixed className="w-5 h-5" />
+        </Button>
       </div>
 
       {/* Hint for employers */}
