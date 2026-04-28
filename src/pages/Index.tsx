@@ -301,6 +301,32 @@ const Index = () => {
       .filter((company) => company.tower_id === towerId)
       .sort((a, b) => a.company_name.localeCompare(b.company_name, "ar"));
 
+  const navAnnouncements = useMemo(
+    () => [
+      ...announcements,
+      ...governmentAnnouncements.map((item) => ({
+        id: item.id,
+        title: item.title,
+        body: `${item.agency_name}${item.location_name ? ` · ${item.location_name}` : ""}`,
+        link_url: item.application_url,
+      })),
+    ],
+    [announcements, governmentAnnouncements]
+  );
+
+  const getDistanceKm = (lat: number, lng: number) => {
+    if (!userLocation) return null;
+    const radius = 6371;
+    const dLat = ((lat - userLocation.lat) * Math.PI) / 180;
+    const dLng = ((lng - userLocation.lng) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((userLocation.lat * Math.PI) / 180) *
+        Math.cos((lat * Math.PI) / 180) *
+        Math.sin(dLng / 2) ** 2;
+    return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
   const renderCompanyDetails = (company: CompanyLocation | TowerCompany, variant: "standalone" | "tower" = "standalone") => (
     <div className="space-y-2 rounded-md border border-border bg-muted/30 p-2">
       <div className="flex items-start gap-2">
