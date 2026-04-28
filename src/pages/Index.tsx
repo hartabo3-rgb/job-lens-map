@@ -587,19 +587,21 @@ const Index = () => {
           <Marker
             key={`job-${job.id}`}
             position={[job.latitude, job.longitude]}
-            icon={job.is_government ? govIcon : jobIcon}
+            icon={getJobIcon(job)}
           >
             <Popup>
               <div className="p-4 font-sans" dir="rtl">
                 <div className="flex items-start gap-2 mb-2">
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      job.is_government
+                      job.sector === "government" || job.is_government
                         ? "bg-gradient-to-br from-red-600 to-red-500"
+                        : job.sector === "semi_government"
+                          ? "bg-gradient-to-br from-emerald-700 to-emerald-500"
                         : "bg-gradient-primary"
                     }`}
                   >
-                    {job.is_government ? (
+                    {job.sector === "government" || job.is_government || job.sector === "semi_government" ? (
                       <Landmark className="w-4 h-4 text-white" />
                     ) : (
                       <Briefcase className="w-4 h-4 text-primary-foreground" />
@@ -610,11 +612,9 @@ const Index = () => {
                       <h3 className="font-bold text-base text-foreground leading-tight m-0">
                         {job.title}
                       </h3>
-                      {job.is_government && (
-                        <Badge className="bg-red-600/10 text-red-700 border-0 text-[10px] px-1.5 py-0">
-                          حكومية
+                      <Badge className="bg-muted text-foreground border-0 text-[10px] px-1.5 py-0">
+                        {getJobLabel(job)}
                         </Badge>
-                      )}
                     </div>
                     <p className="text-xs text-muted-foreground m-0">
                       {job.employer?.company_name || job.employer?.full_name || "صاحب عمل"}
@@ -669,6 +669,8 @@ const Index = () => {
                   className={`w-full ${
                     job.is_government
                       ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90"
+                      : job.sector === "semi_government"
+                        ? "bg-gradient-to-r from-emerald-700 to-emerald-500 hover:opacity-90"
                       : "bg-gradient-primary hover:opacity-90"
                   }`}
                 >
